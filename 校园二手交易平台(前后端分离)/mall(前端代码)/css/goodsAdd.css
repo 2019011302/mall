@@ -1,0 +1,18 @@
+.goods_input{
+	width: 100%;
+	height: 100%;
+	font-size: 20px;
+	outline: none;
+	border: none;
+	background-color: #fffff4;
+}
+.submit{
+	background-color: #00BFBF;
+	border-radius: 0;
+	/* float: right; */
+	width: 100%;
+	height: 40px;
+	color: white;
+	font-size: 15px;
+	border: none;
+}

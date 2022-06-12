@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mall.dao.UserDao">
+<resultMap id="user" type="User">
+    <id  column="user_id" property="userId"></id>
+    <result column="user_name" property="userName"></result>
+    <result column="user_password" property="userPassword"></result>
+    <result column="user_email" property="userEmail"></result>
+    <result column="user_phone" property="userPhone"></result>
+    <result column="user_city" property="userCity"></result>
+    <result column="user_sex" property="userSex"></result>
+    <result column="user_card" property="userCard"></result>
+    <result column="user_status" property="userStatus"></result>
+    <result column="user_img" property="userImg"></result>
+    <result column="user_introduce" property="userIntroduce"></result>
+    <result column="user_wecat" property="userWecat"></result>
+    <result column="user_address" property="userAddress"></result>
+    <result column="user_account" property="userAccount"></result>
+    <result column="user_rewardpoints" property="userRewardpoints"></result>
+    <result column="user_score" property="userScore"></result>
+<!--    <result column="user_scale" property="userScale"></result>-->
+    <result column="user_sale" property="userSale"></result>
+    <result column="user_comments" property="userComments"></result>
+</resultMap>
+
+    <select id="getUserByOrderItemId" resultMap="user">
+        select
+            users.user_id,
+            user_name,
+            user_password,
+            user_phone,
+            user_email,
+            user_city,
+            user_sex,
+            user_card,
+            user_status,
+            user_img,
+            user_introduce,
+            user_wecat,
+            user_address,
+            user_account,
+            user_rewardpoints,
+            user_score,
+--             user_scale,
+            user_sale,
+            user_comments
+        from users
+        join orders on orders.user_id = users.user_id
+        join orderitem on orderitem.order_id = orders.order_id
+            where orderitem.orderItem_id=#{id}
+    </select>
+
+    <select id="getSellerByOrderItemId" resultMap="user">
+        select
+            users.user_id,
+            user_name,
+            user_password,
+            user_phone,
+            user_email,
+            user_city,
+            user_sex,
+            user_card,
+            user_status,
+            user_img,
+            user_introduce,
+            user_wecat,
+            user_address,
+            user_account,
+            user_rewardpoints,
+            user_score,
+--             user_scale,
+            user_sale,
+            user_comments
+        from users
+                 join goods on goods.seller_id = users.user_id
+                 join orderitem on orderitem.goods_id = goods.goods_id
+        where orderitem.orderItem_id=#{id}
+
+    </select>
+</mapper>

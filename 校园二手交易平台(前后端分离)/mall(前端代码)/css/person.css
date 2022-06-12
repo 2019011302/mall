@@ -1,0 +1,68 @@
+* {
+	padding: 0;
+	margin: 0;
+}
+
+body {
+	width: 100%;
+}
+
+.person {
+	width: 80%;
+	margin: 0 auto;
+	
+}
+.person a{
+	text-decoration: none;
+	float: right;
+	color: #00BFBF;
+	
+}
+.personbar {
+	width: 300px;
+	background-color: #F59A23;
+	height: 40px;
+	line-height: 40px;
+	color: #FFFFFF;
+	font-size: 20px;
+	text-align: center;
+	display: inline-block;
+}
+
+.person .tag {
+	/* color: #FFFFFF; */
+	width: 200px;
+	text-align: center;
+	background-color: #F59A23;
+	margin: 10px;
+}
+
+.person table {
+	width: 100%;
+	border: 1px solid #808080;
+	border-collapse: collapse;
+}
+
+.person table td {
+	text-align: center;
+	padding: 5px;
+	border: 1px solid #F2F2F2;
+	height: 30px;
+}
+
+.person img {
+	width: 50px;
+	border-radius: 50%;
+}
+
+.person input {
+	height: 30px;
+	width: 100%;
+}
+
+.person .submit {
+	width: 100%;
+	height: 40px;
+	margin-top: 10px;
+	font-size: 20px;
+}

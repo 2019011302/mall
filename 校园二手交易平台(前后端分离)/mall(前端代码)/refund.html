@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/refund.css">
+	</head>
+	<body>
+		<div id="box">
+			<div class="refund">
+				<div class="refundbar">
+					填写并核对退货信息
+			    </div>
+			    <hr style="border: 2px solid #F59A23;">
+				<div>
+					<div class = "tag">订单信息</div>
+					<div>
+						<table >			
+							<tr>
+								<td colspan="3" class="trbg">商品详情</td>
+								<!-- <td>图片</td>
+								<td>商品名称</td>
+								<td>商品数量</td> -->
+								<td class="trbg">商品金额</td>
+								<td class="trbg">实际付款</td>
+								<td class="trbg">配送地址</td>
+								<td class="trbg">配送方式</td>
+								<td class="trbg">收货人</td>
+								<td class="trbg">联系方式</td>
+								<td class="trbg">订单状态</td>
+								<td class="trbg" v-if="orderItem.orderItemStatus=='已收货'">
+									收货时间
+								</td>
+							</tr>
+							<tr>
+								<td>
+									<img :src="orderItem.goodsImg |getGoodsImg"/>
+								</td>
+								<td style="color:#504064;">{{orderItem.goodsName}}</td>
+								<td style="color:#AAAAB2;">*{{orderItem.goodsNumber}}</td>
+								<td style="color:#AAAAB2;">￥{{orderItem.orderItemSum}}</td>
+								<td style="color:#504064;">￥{{orderItem.orderItemMoney}}</td>
+								<td style="color:#504064;">{{orderItem.orderItemAddress}}</td>
+								<td style="color:#504064;">{{orderItem.orderItemWay}}</td>
+								<td style="color:#504064;">{{orderItem.orderItemName}}</td>
+								<td style="color:#504064;">{{orderItem.orderItemPhone}}</td>
+								<td style="color:#504064;">{{orderItem.orderItemStatus}}</td>
+								<td style="color:#504064;font-size: 10px;" v-if="orderItem.orderItemStatus=='已收货'">
+									{{orderItem.orderItemEtime | fromatEtime}}
+								</td>
+							</tr>
+						</table>	
+					</div>
+				</div>
+				<div>
+					<div class = "tag">退货理由</div>
+					<div>
+						<input v-model="reason" />
+					</div>
+				</div>
+				<div>
+					<button @click="refund()">退货</button>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080";
+			var orderItemId = getUrlParam("orderItemId");
+			var vm = new Vue({
+				el: "#box",
+				data: {
+					orderItem: {},
+					reason:""
+				},
+				filters:{
+					getGoodsImg(img) {
+						return "img/goods/" + img + ".jpg"
+					},
+					fromatEtime(date) {
+						var date1 = new Date(date);
+						var year = date1.getFullYear();
+						var month = padDate(date1.getMonth() + 1);
+						var day = padDate(date1.getDate());
+						var h = padDate(date1.getHours());
+						var m = padDate(date1.getMinutes());
+						var s = padDate(date1.getSeconds());
+						return year + '-' + month + '-' + day + "\n" + h + ":" + m + ":" + s;
+					}
+				},
+				methods:{
+					refund(){
+						if(this.reason ==""){
+							alert("请填写退货理由")
+						}else{
+							var flag = confirm("确认退货吗？")
+							if(flag == true){
+								var refund = {	  
+									refundReason: this.reason,
+									refundResult: "待审核",
+									refundOther:"",
+									orderItemId: orderItemId
+								};
+								axios({
+									method:"post",
+									url:baseUrl+"/refund/add",
+									headers:{
+										token:getCookieValue("token")
+									},
+									data:refund
+								}).then((res)=>{
+									if(res.data.code == 10000){
+										alert("退货申请已提交, 等待商家审核");
+										window.location.href = "orderList.html"
+									}else{
+										alert(res.data.msg);
+									}
+								})
+							}
+						}
+					}
+				},
+				created(){
+					var url = baseUrl+"/order/find"
+					axios.get(url,{
+						params:{
+							orderItemId:orderItemId
+						},
+						headers:{
+							token: getCookieValue("token")
+						}
+					}).then((res)=>{
+						if(res.data.code==10000){
+							console.log(res.data)
+							this.orderItem = res.data.data
+						}else {
+							//跳转登录
+							window.location.href = "login.html"
+						}
+					})
+				}
+				})
+		</script>
+	</body>
+</html>

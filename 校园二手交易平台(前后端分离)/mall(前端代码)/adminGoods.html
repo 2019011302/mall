@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/admin.css" />
+	</head>
+	<body>
+		<div id="box">
+			<div class="header">
+				<img src="./img/admin/admin.png">
+				<p>管理员</p>
+				<a class="index" href="login.html">退出登录&nbsp;</a>
+				<a class="index" href="index.html">商城首页&nbsp;</a>
+			</div>
+			<div class = "bar">
+				<ul>
+					<li v-for="(item , index) in tarlist" :key="index" :class="index==mark?'active':''" @click="mark=index">
+						<a :href="item.href">{{item.name}}</a>
+						<!-- <a href="adminMoney.html"></a> -->
+					</li>
+				</ul>	
+			</div>
+			<div class="container">	
+				<table>
+					<tr class="first">
+						<td colspan="4" style=" border: none;">
+							搜索商品名<input v-model="namekey" placeholder="输入关键字"/>
+						</td>
+						<td colspan="5" style="border: none;">
+							选择商品状态<!-- <input /> -->
+							<select v-model="statuskey">
+								<option  value="all">所有商品</option>
+								<option value="0">待审核商品</option>
+								<option  value="-1">已下架商品</option>
+								<option value="1">上架商品</option>
+								<option value="2">首页推荐商品</option>
+							</select>
+						</td>
+					</tr>
+					<tr class="second">
+						<td>商品id</td>
+						<td>卖家id</td>
+						<td>卖家类型</td>
+						<td>商品名称</td>
+						<td>商品图片</td>
+						<td>商品价格</td>
+						<td>商品类型</td>
+						<td>商品状态</td>
+						<td>操作</td>
+					</tr>
+					<tr v-for="(item , index) in getDatalist " :key="index">
+						<td>{{item.goodsId}}</td>
+						<td>{{item.sellerId}}</td>
+						<td>{{item.sellerType | getSellerType}}</td>
+						<td>{{item.goodsName}}</td>
+						<td>
+							<img :src="item.goodsImg| getGoodsImg">
+						</td>
+						<td>￥{{item.goodsPrice}}</td>
+						<td>{{item.goodsType | getType}}</td>
+
+						<td v-if="item.goodsStatus==0" style="color: #00BFBF;">待审核</td>
+						<td v-else-if="item.goodsStatus==1">在售</td>
+						<td v-else-if="item.goodsStatus==2">首页推荐</td>
+						<td v-else-if="item.goodsStatus==-1" style="color: #808080">已下架</td>
+						
+						<td v-if="item.goodsStatus==0">
+							<button class="success" @click="gotoDetail(item.goodsId)">详情</button>
+							<button class="success" @click="handleClick(item,1)">通过</button>
+							<button class="fail" @click="handleClick(item,-2)">不通过</button>
+						</td>
+						<td v-else-if="item.goodsStatus==1" style="width:15%">
+							<button class="success" @click="gotoDetail(item.goodsId)">详情</button>
+							<button class="fail" @click="handleClick(item,-1)">下架</button>
+							<button class="recommend" @click="handleClick(item,2)">推荐</button>
+						</td>
+						<td v-else-if="item.goodsStatus==-1">
+							<button class="success"  @click="gotoDetail(item.goodsId)">详情</button>
+							<button class="fail" @click="handleClick(item,1)">上架</button>
+						</td>
+						<td v-else-if="item.goodsStatus==2" style="width: 15%;">
+							<button class="success"  @click="gotoDetail(item.goodsId)">详情</button>
+							<button class="fail" @click="handleClick(item,-1)">下架</button>
+							<button class="recommend" @click="handleClick(item,1)">取消</button>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080"
+			var vm = new Vue({
+					el:"#box",
+					data:{
+						tarlist:[],
+						datalist:[],
+						mark:2,
+						namekey:"",
+						statuskey:"all"
+					},
+					computed:{
+						getDatalist(){
+							console.log(this.statuskey)
+							var list=[];
+							if(this.statuskey=="all"){
+									list = this.datalist.filter(
+										item=>(item.goodsName.includes(this.namekey))
+								)	
+							}else{
+								list = this.datalist.filter(
+									item=>item.goodsStatus==this.statuskey && item.goodsName.includes(this.namekey)
+								)
+							}
+							return list
+						}
+					},
+					filters: {
+						getGoodsImg(img) {
+							return "img/goods/" + img + ".jpg"
+						},
+						getType(type){
+							if(type == 1){
+								return "图书教材"
+							}else if(type == 2){
+								return "闲置数码"
+							}else if(type == 3){
+								return "寝室用具"
+							}else if(type == 4){
+								return "电器日用"
+							}
+						},
+						getSellerType(type){
+							if(type == 'user'){
+								return '个人用户'
+							}else if(type == 'seller'){
+								return '商家'
+							}
+						}
+					},
+					methods:{
+						getTarlist(){
+							axios.get("./json/data.json")
+								.then(res=>{
+									this.tarlist=res.data.data.admin
+								}).catch(err =>{
+									console.log(err)
+								})
+						},
+						gotoDetail(id){
+							window.location.href = "goodsDetails.html?goodsid="+id;
+						},
+						doUpdate(item){
+							var url = "http://localhost:8080/admin/checkgoods"
+							axios({
+								method:'put',
+								url:url,
+								headers:{
+									token:getCookieValue("token")
+								},
+								data:item
+							}).then((res)=>{
+								console.log("res",res.data)
+								if(res.data.code==10000){
+									this.onCreated();
+								}else{
+									alert(res.data.msg)
+								}
+							})
+						},
+						handleClick(item , status){
+							var flag;
+							if(status == -2){
+								flag = confirm("确认驳回商品吗？\n若确认，该商品会从列表中删除")
+							}
+							else if(status == -1){
+								flag = confirm("确认下架商品吗？")
+							}
+							else if(status == 1){
+								flag = confirm("确认操作吗？")
+							}
+							else if(status == 2){
+								flag = confirm("确认推荐商品吗？")
+							}
+							
+							if(flag){
+								item.goodsStatus = status;
+								this.doUpdate(item);
+							}
+						},
+						onCreated(){
+							var token = getCookieValue("token");
+							console.log(token)
+							//获取全部商品数据
+							url = baseUrl+"/goods/list"
+							axios.get(url, {
+								headers: {
+									token: token
+								}
+							}).then((res) => {
+								if (res.data.code == 10000) {
+									console.log(res.data)
+									this.datalist = res.data.data
+								} else {
+									alert(res.data.msg)
+									window.location.href = "login.html"
+								}		
+							})
+						}
+					},
+					created(){
+						this.getTarlist();
+						this.onCreated();
+					}
+				})
+		</script>
+			
+
+	</body>
+</html>

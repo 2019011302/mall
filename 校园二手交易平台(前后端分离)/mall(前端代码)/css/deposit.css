@@ -1,0 +1,16 @@
+		.deposit{
+			width: 80%;
+			margin: 0 auto;
+			text-align: center;
+		}
+		.deposit input{
+			width: 100%;
+			height: 50px;
+			font-size: 30px;
+		}
+		.deposit button{
+			width: 100%;
+			height: 30px;
+			font-size: 20px;
+			margin-top: 20px;
+		}

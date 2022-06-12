@@ -1,0 +1,52 @@
+		*{
+			padding: 0;
+			margin: 0;
+		}
+		body{
+			width: 100%;
+		}
+		.comment{
+			width: 80%;
+			margin: 0 auto;
+		}
+		.commentbar{
+			width: 300px;
+			background-color: #F59A23;
+			height: 40px;
+			line-height: 40px;
+			color: #FFFFFF;
+			font-size: 20px;
+			text-align: center;
+		}
+		.comment .tag{
+			/* color: #FFFFFF; */
+			width: 200px;
+			text-align: center;
+			background-color: #F59A23;
+			margin: 10px;
+			display: inline-block;
+		}
+		.comment table{
+			width: 100%;
+			border: 1px solid #808080;
+			border-collapse: collapse;
+		}
+		.comment table td{
+			text-align: center;
+			width: 10%;
+			padding: 5px;
+			border: 1px solid #F2F2F2;
+		}
+		.comment img{
+			width: 120px;
+		}
+		.myinput{
+			width: 100%;
+			height: 150px;
+		}
+		.comment button{
+			width: 100%;
+			height: 40px;
+			margin-top: 10px;
+			font-size: 20px;
+		}

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/admin.css" />
+	</head>
+	<body>
+		<div id="box">
+			<div class="header">
+				<img src="./img/admin/admin.png">
+				<p>管理员</p>
+				<a class="index" href="login.html">退出登录&nbsp;</a>
+				<a class="index" href="index.html">商城首页&nbsp;</a>
+			</div>
+			<div class = "bar">
+				<ul>
+					<li v-for="(item , index) in tarlist" :key="index" :class="index==mark?'active':''" @click="mark=index">
+						<a :href="item.href">{{item.name}}</a>
+					</li>
+				</ul>	
+			</div>
+			<div class="container">	
+				<table>
+					<!-- <tr class="first">
+					</tr> -->
+					<tr class="second">
+						<td>序号</td>
+						<td>等级</td>
+						<td>收费比例（每笔订单）</td>
+					</tr>
+					<tr v-for="(item , index) in datalist " :key="index">
+						<td>{{item.tariffId}}</td>
+						<td>{{item.tariffScale}}级</td>
+						<td>{{item.tariffRate*100}}%</td>
+
+					</tr>
+				</table>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080"
+			var vm = new Vue({
+					el:"#box",
+					data:{
+						tarlist:[],
+						datalist:[],
+						mark:3
+					},
+					methods:{
+						getTarlist(){
+							axios.get("./json/data.json")
+								.then(res=>{
+									this.tarlist=res.data.data.admin
+								}).catch(err =>{
+									console.log(err)
+								})
+						},
+						onCreated(){
+							var token = getCookieValue("token");
+							console.log(token)
+							//获取全部费率数据
+							url = baseUrl+"/tariff/list"
+							axios.get(url, {
+								headers: {
+									token: token
+								}
+							}).then((res) => {
+								if (res.data.code == 10000) {
+									console.log(res.data)
+									this.datalist = res.data.data
+								} else {
+									alert(res.data.msg)
+									//window.location.href = "login.html"
+								}
+							
+							})
+						}
+					},
+					created(){
+						this.getTarlist();
+						this.onCreated();
+					}
+				})
+		</script>
+			
+
+	</body>
+</html>

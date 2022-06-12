@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/seller.css" />
+		<link rel="stylesheet" type="text/css" href="css/goodsAdd.css" />
+	</head>
+	<body>
+		<div id="box">
+			<div class="header">
+				<img src="img/common/shop.png">
+				<p>{{name}}</p>
+				<a class="index" href="login.html">退出登录&nbsp;</a>
+				<a class="index" href="index.html">商城首页&nbsp;</a>
+			</div>
+			<div class="bar">
+				<ul>
+					<li v-for="(item , index) in tarlist" :key="index" :class="index==mark?'active':''"
+						@click="mark=index">
+						<a :href="item.href">{{item.name}}</a>
+					</li>
+				</ul>
+			</div>
+			<div class="container">
+				<form onsubmit="return false">
+				<table>
+					<tr>
+						<td style="width: 20%;">商品名称</td>
+						<td style="width: 80%;">
+							<input class="goods_input" v-model="goods.goodsName" required="required">
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 20%;">介绍/使用说明</td>
+						<td style="width: 80%;">
+							<input class="goods_input" v-model="goods.goodsIntroduce" required="required" />
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 20%;">新旧程度</td>
+						<td style="width: 80%;">
+							<input class="goods_input" v-model="goods.goodsOld" required="required" />
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 20%;">商品图片</td>
+						<td style="width: 80%;">
+							<!-- <input v-model="goods.goodsImg" required="required" /> -->
+							<input type="file" id="img" @change="show('img' ,'showImg' )"/>
+							<div id="showImg"></div>
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 20%;">商品价格</td>
+						<td style="width: 80%;">
+							<input class="goods_input" v-model="goods.goodsPrice" required="required" />
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 20%;">是否议价</td>
+						<td style="width: 80%;">
+							<select v-model="goods.goodsBargain" style="width: 100%;" required="required" >
+								<option value="是">是</option>
+								<option  value="否">否</option>		
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 20%;">商品类型</td>
+						<td style="width: 80%;">
+<!-- 							<input class="goods_input" v-model="goods.goodsType" required="required" /> -->
+							<select v-model="goods.goodsType" style="width: 100%;" required="required">
+								<option value="1">图书教材</option>
+								<option  value="2">闲置数码</option>
+								<option  value="3">寝室用具</option>
+								<option  value="4">电器日用</option>
+							</select>
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 20%;">商品尺寸(重量)</td>
+						<td style="width: 80%;">
+							<input class="goods_input" v-model="goods.goodsSize" required="required" />
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 20%;">库存</td>
+						<td style="width: 80%;">
+							<input class="goods_input" v-model="goods.goodsStock" required="required" />
+						</td>
+					</tr>
+					<tr>
+						<td style="width: 20%;">配送方式</td>
+						<td style="width: 80%;">
+							<select v-model="goods.goodsWay" style="width: 100%;" >
+								<option value="线下交易">线下交易</option>
+								<option  value="快递配送">快递配送</option>
+							</select>
+						</td>
+					</tr>
+				</table>
+					<!-- <input type="submit" class="submit" onclick="onSubmit" /> -->
+					<button class="submit" @click="onSubmit">提交</button>
+				</form>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/img.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080"
+			var vm = new Vue({
+				el: "#box",
+				data: {
+					tarlist: [],
+					datalist: [],
+					mark: 1,
+					name: "",
+					goods: {
+						goodsName: "",
+						goodsIntroduce: "",
+						goodsOld:"",
+						goodsPrice: "",
+						goodsBargain:"",
+						goodsType: "",
+						goodsSize: "",
+						// goodsImg: "",
+						goodsStock: "",
+						goodsWay: "",
+						sellerId:"",
+						sellerType:getCookieValue("role")
+					}
+				},
+				methods: {
+					getTarlist() {
+						axios.get("./json/data.json")
+							.then(res => {
+								this.tarlist = res.data.data.seller
+							}).catch(err => {
+								console.log(err)
+							})
+					},
+					show(img, div) {
+						showImg(img, div)
+					},
+					onCreated() {
+						this.name = getCookieValue("username")
+					},
+					checkRegist(){
+						//判断空
+						if( this.goods.goodsName=="" || this.goods.goodsIntroduce==""
+						||this.goods.goodsPrice==""
+						||this.goods.goodsSize=="" ||this.goods.goodsStock==""
+						||this.goods.goodsType=="" ||this.goods.goodsWay==""
+						){
+							return false ;
+						}
+						return true;
+					},
+					addImg(file , name , path){
+						var url = baseUrl + "/img/upload";	
+						//传参
+						var form = new FormData();
+						form.append('file' , file);
+						form.append('name' , name);
+						form.append('path' , path);
+						axios({
+							method:"post",
+							url:url,
+							header:{
+									'Content-Type':'multipart/form-data'
+								},
+							data:form
+						})
+						.then((res)=>{
+							if(res.data.code == 10000){
+								alert("提交成功,等待审核");
+							}else{
+								alert("提交失败");
+							}
+						})
+					},
+					onSubmit() {
+						if(this.checkRegist()){
+							console.log(this.goods)
+							var goods = this.goods
+							goods.sellerId=getCookieValue("userid");
+							axios({
+								method:"post",
+								url:baseUrl+"/goods/add",
+								headers:{
+									token:getCookieValue("token")
+								},
+								data:goods
+							}).then((res)=>{
+								if(res.data.code==10000){
+									var img = res.data.data;
+									var file1 = document.getElementById('img');
+									var file = file1.files[0];
+									this.addImg(file ,img  , "D:/Documents/HBuilderProjects/mall/img/goods/")
+								}else{
+									alert(res.data.msg)
+									//window.location.href = "login.html"
+								}
+							})
+						}
+					}
+				},
+				created() {
+					this.getTarlist();
+					this.onCreated();
+				}
+			})
+		</script>
+
+
+	</body>
+</html>

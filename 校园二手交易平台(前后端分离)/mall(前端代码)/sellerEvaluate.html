@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/seller.css" />
+		<link rel="stylesheet" type="text/css" href="css/orderList.css" />
+	</head>
+	<body>
+		<div id="box">
+			<div>
+				<p style="font-size: 30px; text-align: center;">评价</p>
+			</div>
+			<div class="orderItem">
+				<table>
+					<tr>
+						<td colspan="3" class="trbg">订单详情</td>
+						<td class="trbg">商品金额</td>
+						<td class="trbg">实际付款</td>
+						<td class="trbg">配送地址</td>
+						<td class="trbg">配送方式</td>
+						<td class="trbg">收货人</td>
+						<td class="trbg">联系方式</td>
+						<td class="trbg">订单状态</td>
+					</tr>
+					<tr>
+						<td>
+							<img :src="item.goodsImg |getGoodsImg" @click="gotoGoodsDetails(item.goodsId)" />
+						</td>
+						<td style="color:#504064;">{{item.goodsName}}</td>
+						<td style="color:#AAAAB2;">*{{item.goodsNumber}}</td>
+						<td style="color:#AAAAB2;">￥{{item.orderItemSum}}</td>
+						<td style="color:#504064;">￥{{item.orderItemMoney}}</td>
+						<td style="color:#504064;">{{item.orderItemAddress}}</td>
+						<td style="color:#504064;">{{item.orderItemWay}}</td>
+						<td style="color:#504064;">{{item.orderItemName}}</td>
+						<td style="color:#504064;">{{item.orderItemPhone}}</td>
+						<td style="color:#504064;">{{item.orderItemStatus}}</td>
+					</tr>
+					<tr>
+						<td style="color:#504064;">给用户评分</td>
+						<td colspan="9">
+							<input type="radio" name="sorce" style="margin: 10px;" v-model="sorce" value="100" /> 100分
+							<input type="radio" name="sorce" style="margin: 10px;" v-model="sorce" value="80" /> 80分
+							<input type="radio" name="sorce" style="margin: 10px;" v-model="sorce" value="60" /> 60分
+							<input type="radio" name="sorce" style="margin: 10px;" v-model="sorce" value="40" /> 40分
+							<input type="radio" name="sorce" style="margin: 10px;" v-model="sorce" value="20" /> 20分
+						</td>
+					</tr>
+					<tr>
+						<td style="color:#504064;">文字描述</td>
+						<td colspan="9">
+							<input class="sellerinput" v-model="describe" />
+						</td>
+					</tr>
+				</table>
+				<button class="submit" @click="onSubmit">提交</button>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080"
+			var orderItemId = getUrlParam("orderItemId")
+			var vm = new Vue({
+				el: "#box",
+				data: {
+					tarlist: [],
+					datalist: [],
+					mark: 4,
+					item: {},
+					sorce:0,
+					describe:""
+				},
+				filters: {
+					getGoodsImg(img) {
+						return "img/goods/" + img + ".jpg"
+					}
+				},
+				methods: {
+					getTarlist() {
+						axios.get("./json/data.json")
+							.then(res => {
+								this.tarlist = res.data.data.seller
+							}).catch(err => {
+								console.log(err)
+							})
+					},
+					onSubmit(){
+						console.log("sorce",this.sorce)
+						console.log("describe",this.describe)
+							if(this.describe ==""){
+								alert("请输入文字描述信息")
+							}else if(this.sorce == 0){
+								alert("请给用户打分")
+							}else{
+								var flag = confirm("确认提交吗？")
+								if(flag == true){
+									var score2 = this.sorce;
+									var text2 = this.describe;
+									axios({
+										method:"post",
+										url:baseUrl+"/comment/addseller",
+										headers:{
+											token:getCookieValue("token")
+										},
+										params:{
+											score2:score2,
+											text2:text2,
+											orderItemId:orderItemId
+										}
+									}).then((res)=>{
+										if(res.data.code == 10000){
+											alert("提交成功");
+										}else{
+											alert(res.data.msg);
+										}
+									})
+								}
+							}
+					},
+					onCreated() {
+						var url = baseUrl + "/order/find"
+						axios.get(url, {
+							params: {
+								orderItemId: orderItemId
+							},
+							headers: {
+								token: getCookieValue("token")
+							}
+						}).then((res) => {
+							console.log(res.data)
+							this.item = res.data.data
+						})
+
+					}
+				},
+				created() {
+					this.getTarlist();
+					this.onCreated();
+				}
+			})
+		</script>
+
+
+	</body>
+</html>

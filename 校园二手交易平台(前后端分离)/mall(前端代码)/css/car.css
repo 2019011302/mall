@@ -1,0 +1,49 @@
+			body {
+				width: 100%;
+			}
+
+			.car {
+				width: 80%;
+				margin: 0 auto;
+			}
+
+			.car img {
+				width: 120px;
+			}
+
+			.car button {
+				width: 50px;
+			}
+
+			.car table {
+				width: 100%;
+			}
+
+			.car table td {
+				text-align: center;
+				padding: 10px;
+			}
+
+			.sumbar {
+				background-color: #F0F8FF;
+				position: fixed;
+				bottom: 0px;
+				height: 50px;
+				width: 100%;
+			}
+
+			.sumbar ul {
+				list-style: none;
+				width: 100%;
+			}
+
+			.sumbar ul li {
+				/* display: flex;
+				justify-content: space-around; */
+				float: left;
+				/* border: 1px solid #000000; */
+				line-height: 50px;
+				height: 50px;
+				width: 33%;
+				text-align: center;
+			}

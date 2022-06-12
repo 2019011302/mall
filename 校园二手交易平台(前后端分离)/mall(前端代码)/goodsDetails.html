@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/header.css">
+		<link rel="stylesheet" type="text/css" href="css/nav.css">
+		<link rel="stylesheet" type="text/css" href="css/goodsdetail.css">
+	</head>
+	<body>
+		<div id="box">
+			<!-- 头部 -->
+			<div class="header" id="header">
+				<p v-if="!username">您好，请<a href="login.html" target="_blank">登录</a>。免费<a href="regist.html" target="_blank">注册</a></p>
+				<p v-else>你好，{{username}}，欢迎登录 </p>
+				<ul class="header_ul">
+					<li v-for="(item , index) in indexlist" :key="index">
+						<a :href="item.href">{{item.name}}</a>
+					</li>
+				</ul>
+			</div>
+			
+			<!-- 搜索框 -->
+			<div class="nav">
+				<input @click="search()"/>
+				<button>搜索</button>
+			</div>	
+			<hr>
+			<!-- 商品详情 -->
+			<div class="goodsdetail">
+				<table>
+					<tr>
+						<td rowspan="8" style="text-align: center;width: 30%;">
+							<img :src="goods.goodsImg | getGoodsImg">
+						</td>
+					</tr>
+					<tr>
+						<td colspan="3" style="font-size: 25px; text-align:left"><b>{{goods.goodsName}}</b></td>
+					</tr>
+					<tr>
+						<td colspan="3" style="font-size: 20px;text-align:left"><b>{{goods.goodsIntroduce}}</b></td>
+					</tr>
+					<tr>
+						<td colspan="3" style="font-size: 20px;text-align:left">售价：<b
+								style="color: #FF0000;">￥{{goods.goodsPrice}}</b></td>
+					</tr>
+					<tr>
+						<td>历史销量：{{goods.goodsSales}}</td>
+						<td>购买人数：{{goods.goodsBuyers}}</td>
+						<td>评价分数：{{goods.goodsScore}}</td>
+					</tr>
+					<tr>
+						<td>交易方式：{{goods.goodsWay}}</td>
+						<td>商品类别：{{goods.goodsType | getType}}</td>
+						<td>商品好评率：{{goods.goodsPraiserate*100}}%</td>
+					</tr>
+					<tr>
+						<td>{{goods.goodsSize}}</td>
+						<td>新旧程度：{{goods.goodsOld}}</td>
+						<td>是否议价：{{goods.goodsBargain}}</td>
+					</tr>
+					<tr>
+						<td colspan="3" style="text-align:left">库存：{{goods.goodsStock}}件</td>
+					</tr>
+				</table>
+			</div>
+			<hr>
+			<!-- 商品评价信息 -->
+			<div class="commentsBar">
+				<p>用户评价</p>
+			</div>
+			<div v-if="!commentslist.length">
+				<p style="text-align: center;">暂无用户评价</p>
+			</div>
+			<div v-else>
+				<div class="comments" v-for="(item,index ) in commentslist " :key="index">
+					<!-- 显示用户评价 -->
+					<table>
+						<tr>
+							<td rowspan="2" style="width: 10%; height: 50px; text-align: center;">
+								<img src="img/common/comment.png" />
+							</td>
+							<td style="height: 20px;"> 匿名</td>
+							<td>时间：{{handleDate(item.commentTime1)}}</td>
+						</tr>
+						<tr>
+							<td style="height: 20px;">评分：{{item.commentScore1}}分</td>
+							<td>商家服务态度评分：{{item.commentService}}分</td>
+						</tr>
+						<tr>
+							<td colspan="3" style="font-size: 15px;">{{item.commentText1}}</td>
+						</tr>
+						<tr v-if="item.commentText2 != null">
+							<td colspan="3">卖家回复：{{item.commentText2}}</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div style="height: 55px;"></div>
+			<!-- 底部 -->
+			<div class="footer" v-if="goods.goodsStatus==-1">
+				<p style="text-align: center; font-size: 40px;background-color: #F59A23;color:#FFFFFF;">商品已下架</p>
+			</div>
+			<div class="footer" v-if="goods.goodsStatus==0">
+				<p style="text-align: center; font-size: 40px;background-color: #F59A23; color:#FFFFFF;">商品正在审核，请等待</p>
+			</div>
+			<div class="footer" v-else>
+				<div v-if="role=='user'">
+					<ul>
+					<li style="background-color:#FFFFFF ;">
+						<button @click="number--" :disabled="number==1">-</button>
+						<input type="text" @input="handleInput" v-model="number" />
+						<button  @click="number++" :disabled="number==goods.goodsStock">+</button>
+					</li>
+					<li style="background-color:#D9001B ;" @click="addShoppingCar()">加入购物车</li>
+					<li style="background-color: #F59A23;" @click="gotoAccounts()">立即购买</li>
+					</ul>
+				</div>
+				
+			</div>
+		</div>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript">
+			console.log(getUrlParam("goodsid"))
+			var baseUrl = "http://localhost:8080";
+			var vm = new Vue({
+				el: "#box",
+				data: {
+					goods: {},
+					commentslist: [],
+					number:1,
+					username:"",
+					indexlist:[],
+					role:""
+				},
+				filters: {
+					getGoodsImg(img) {
+						return "img/goods/" + img + ".jpg"
+					},
+					getType(type){
+						if(type == 1){
+							return "图书教材"
+						}else if(type == 2){
+							return "闲置数码"
+						}else if(type == 3){
+							return "寝室用具"
+						}else if(type == 4){
+							return "电器日用"
+						}
+					}
+				},
+				methods:{
+					handleDate(date){
+						return showDate(date)
+					},
+					getIndexlist(){
+						var role = getCookieValue("role")
+						axios.get("./json/data.json")
+							.then(res=>{
+								//this.indexlist=res.data.data.index
+								if(role=='user'){
+									this.indexlist=res.data.data.index
+								}
+								else if(role=='seller'){
+									this.indexlist=res.data.data.index2
+								}else{
+									this.indexlist=res.data.data.index3
+								}
+							}).catch(err =>{
+								console.log(err)
+							})
+					},
+					handleInput(evt) {
+						console.log(evt.target.value)
+						if (evt.target.value != null && evt.target.value.length > 0) {
+							if (isNumber(evt.target.value)) {
+								this.number = parseInt(this.number)
+								if (parseInt(evt.target.value) > 5) {
+									this.number = 5
+								}
+								if (parseInt(evt.target.value) < 1) {
+									this.number = 1
+								}
+							}else{
+								alert('请输入数字！')
+								this.number = 1
+							}
+						}
+					},
+					addShoppingCar(){
+						var url = baseUrl +"/shopcar/add";
+						var token = getCookieValue('token');
+						// var userid = getCookieValue('userid');
+						// var goodsid = getUrlParam("goodsid");
+						var shopingcar = {
+							//购物车id
+							//用户id
+							userId: getCookieValue('userid'),
+							//商品id
+							goodsId:getUrlParam("goodsid"),
+							//加购时间
+							carTime: new Date(),
+							//加购数量
+							carNumber: this.number
+						};
+						axios({
+							method:"post",
+							url:url,
+							headers:{
+								token:token
+							},
+							data:shopingcar
+						}).then((res)=>{
+							if(res.data.code ==10000){
+								alert(res.data.msg)
+							}else {
+								alert("添加失败,请先登录")
+								//跳转登录
+								window.location.href = "login.html"
+							}
+						})
+					},
+					gotoAccounts() {
+						if(this.username){
+							var goodsid = getUrlParam("goodsid");
+							window.location.href="FromDetailsAccount.html?goodsId="+ goodsid+"&goodsNumber="+this.number;
+						}else {
+								alert("您好，请先登录")
+								//跳转登录
+								window.location.href = "login.html"
+						}
+					}
+				},
+				created() {
+					this.getIndexlist()
+					this.username = getCookieValue("username");
+					this.role = getCookieValue("role")
+					var goodsid = getUrlParam("goodsid");
+					var url1 = baseUrl + "/goods/goods"
+					// 获得商品信息详情
+					axios.get(url1, {
+						params: {
+							goodsId: goodsid
+						}
+					}).then((res) => {
+						this.goods = res.data.data
+						console.log(this.goods)
+					});
+					//获得商品评价信息
+					var url2 = baseUrl + "/comment/goodscomment"
+					axios.get(url2, {
+						params: {
+							goodsId: goodsid
+						}
+					}).then((res) => {
+						this.commentslist = res.data.data
+						console.log(this.commentslist)
+					})
+				}
+			})
+		</script>
+	</body>
+</html>

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/person.css">
+	</head>
+	<body>
+		<div id="box">
+			<div class="person">
+				<div class="personbar">信息中心</div>
+				<img src="img/common/update.png" style="float: right; width: 30px;" @click="flag=!flag"/>
+				<a href="userComment.html" v-if="role=='user'">我的评价</a>
+				<hr style="border: 2px solid #F59A23;">
+				<div>
+					<table>
+						<tr>
+							<td width="10%">头像</td>
+							<td>
+								<img :src="user.userImg | getImg " v-if="flag"/>
+								<!-- <input v-show="!flag" v-model="user.userImg"/> -->
+								<div v-if="!flag">
+									<input type="file" id="img" @change="show('img' ,'showImg' )"/>
+									<div id="showImg"></div>
+								</div>
+								<!-- <input v-show="!flag" type="file" id="img" @input="handleInput"/> -->
+							</td>
+						</tr>
+						<tr>
+							<td>用户名</td>
+							<td>
+							{{user.userName}}
+							</td>
+						</tr>
+						<tr>
+							<td>密码</td>
+							<td>
+							<span v-show="flag">{{user.userPassword}}</span>
+							<input v-show="!flag" v-model="user.userPassword" />
+							</td>
+						</tr>
+						<tr v-if="role=='user'">
+							<td>性别</td>
+							<td>
+							<span v-show="flag">{{user.userSex}}</span>
+							<input v-show="!flag" v-model="user.userSex" />
+							</td>
+						</tr>
+						<tr>
+							<td>城市</td>
+							<td>
+							<span v-show="flag">{{user.userCity}}</span>
+							<input v-show="!flag" v-model="user.userCity" />
+							</td>
+						</tr>
+						<tr>
+							<td>手机号</td>
+							<td>
+							<span v-show="flag">{{user.userPhone}}</span>
+							<input v-show="!flag" v-model="user.userPhone" />
+							</td>
+						</tr>
+						<tr>
+							<td>邮箱</td>
+							<td>
+							<span v-show="flag">{{user.userEmail}}</span>
+							<input v-show="!flag" v-model="user.userEmail" />
+							</td>
+						</tr>
+						<tr>
+							<td>银行卡账号</td>
+							<td>
+							<span v-show="flag">{{user.userCard}}</span>
+							<input v-show="!flag" v-model="user.userCard" />
+							</td>
+						</tr>
+						<tr v-if="role=='user'">
+							<td>收货地址</td>
+							<td>
+							<span v-show="flag">{{user.userAddress}}</span>
+							<input v-show="!flag" v-model="user.userAddress" />
+							</td>
+						</tr>
+						<tr>
+							<td>微信名</td>
+							<td>
+							<span v-show="flag">{{user.userWecat}}</span>
+							<input v-show="!flag" v-model="user.userWecat" />
+							</td>
+						</tr>
+						<tr>
+							<td>账户余额</td>
+							<td>{{user.userAccount}}元
+							<button style="float: right;" @click="gotoDeposit()" v-if="role=='user'">充值</button>
+							<button style="float: right;" @click="gotoBillDetails()">查看账单</button>
+							</td>
+						</tr>
+						<tr v-if="role=='user'">
+							<td>积分</td>
+							<td>{{user.userRewardpoints}}</td>
+						</tr>
+						<tr v-if="role=='user'">
+							<td>个人介绍</td>
+							<td>
+							<span v-show="flag">{{user.userIntroduce}}</span>
+							<input v-show="!flag" v-model="user.userIntroduce" />
+							</td>
+						</tr>
+					</table>
+				</div>
+
+				<div>
+					<button @click="onSubmit()" class="submit" v-show="!flag">提交</button>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/img.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080";
+			var userId = getCookieValue("userId");
+			var vm = new Vue({
+				el: "#box",
+				data: {
+					user: {},
+					flag:true,
+					role:""
+				},
+				filters: {
+					getImg(img){
+						this.role = getCookieValue("role");
+						return "img/" + this.role+"/"+img + ".jpg";
+					},
+					fromatEtime(date) {
+						var date1 = new Date(date);
+						var year = date1.getFullYear();
+						var month = padDate(date1.getMonth() + 1);
+						var day = padDate(date1.getDate());
+						var h = padDate(date1.getHours());
+						var m = padDate(date1.getMinutes());
+						var s = padDate(date1.getSeconds());
+						return year + '-' + month + '-' + day + "\n" + h + ":" + m + ":" + s;
+					}
+				},
+				methods: {
+					show(img, div) {
+						showImg(img, div)
+					},
+					addImg(file , name , path){
+						var url = baseUrl + "/img/upload";	
+						//传参
+						var form = new FormData();
+						form.append('file' , file);
+						form.append('name' , name);
+						form.append('path' , path);
+						axios({
+							method:"post",
+							url:url,
+							header:{
+									'Content-Type':'multipart/form-data'
+								},
+							data:form
+						})
+						.then((res)=>{
+							console.log(res.data)
+							if(res.data.code == 10000){
+								// this.tip="提交成功，等待审核";
+								// this.p_color="green"
+							}else{
+								this.tip = res.data.msg;
+								this.p_color="red"
+							}
+						})
+					},
+					onSubmit() {
+						// var url = baseUrl+"/user/update";
+						// if(this.role=='user'){
+						// 	url = baseUrl + "/user/update";
+						// }else if(this.role=='seller'){
+						// 	url = baseUrl + "/seller/update";
+						// }
+						
+						var url = "";
+						var type="";
+						this.role = getCookieValue("role");
+						if(this.role=='user'){
+							url = baseUrl + "/user/update";
+							type='user'
+							
+						}else if(this.role=='seller'){
+							url = baseUrl + "/seller/update";
+							type='seller';
+						}else if(this.role=='admin'){
+							type =getUrlParam('type');
+							url = baseUrl + "/"+type+"/update";
+							
+						}
+						
+						//url.goodsId = parseInt(url.goodsId);
+						axios({
+							method:"put",
+							url:url,
+							headers:{
+								token: getCookieValue("token")
+							},
+							data:this.user
+						}).then((res)=>{
+							if(res.data.code == 10000){
+								alert("修改成功")
+								//var img = res.data.data;
+								var file1 = document.getElementById('img');
+								var file = file1.files[0];
+								name=this.user.userName;
+								var url = "D:/Documents/HBuilderProjects/mall/img/"+type+"/"
+								this.addImg(file ,name , url)
+								this.flag = true
+								
+							}else{
+								alert("修改失败")
+							}
+						})
+					},
+					gotoBillDetails(){
+						window.location.href="billDetails.html"
+					},
+					gotoDeposit(){
+						window.location.href="depositAccount.html"
+					}
+					//,
+					// handleInput(){
+					// 	var img = document.getElementById('img').value;
+					// 	console.log(img)
+					// }
+				},
+			created() {	
+				var url = "";
+				var id;
+				this.role = getCookieValue("role");
+				console.log("this.role" , this.role)
+				if(this.role=='user'){
+					url = baseUrl + "/user/info";
+					id = getCookieValue("userid");
+				}else if(this.role=='seller'){
+					url = baseUrl + "/seller/info";
+					id = getCookieValue("userid");
+				}else if(this.role=='admin'){
+					var type =getUrlParam('type');
+					url = baseUrl + "/"+type+"/info";
+					id = getUrlParam('id');
+				}
+				
+				axios.get(url, {
+					params: {
+						id:id
+					},
+					headers: {
+						token: getCookieValue("token")
+					}
+				}).then((res) => {
+					console.log(res.data)
+					if(res.data.code==10000){
+						this.user = res.data.data
+						console.log(this.user)
+					}else {
+						//跳转登录
+						//window.location.href = "login.html"
+					}
+				})
+			}
+		})
+		</script>
+	</body>
+</html>

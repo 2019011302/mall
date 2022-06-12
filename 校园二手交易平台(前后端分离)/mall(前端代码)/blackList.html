@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/commentlist.css">
+	</head>
+	<body>
+		<div id = "box">
+			<div class="commentlist">	
+				<table>
+					<tr>
+						<td colspan="8" style="font-size: 30px;">黑名单</td>
+					</tr>
+					<tr>
+						<td>用户号</td>
+						<td>操作</td>
+					</tr>
+					<tr v-for="(item , index) in balckList" :key="index">
+						<td>{{item.userId}}</td>
+						<td>
+							<button @click="cancel(item.id)">从黑名单移除</button>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript">
+			var baseUrl="http://localhost:8080";
+			var vm = new Vue({
+				el:"#box",
+				data:{
+					balckList:[]
+				},
+				methods:{
+					handleDate(date){
+						return showDate(date)
+					},
+					cancel(id){
+						var flag = confirm("确认移除黑名单吗?")
+						if(flag){
+							var url = baseUrl + "/blacklist/delete"
+							axios({
+								method:'delete',
+								url:url,
+								headers:{
+									token:getCookieValue("token")
+								},
+								params:{
+									blackId:id
+								}
+							}).then((res)=>{
+								console.log("res",res.data)
+								if(res.data.code==10000){
+									alert('操作成功');
+									this.onCreated();
+								}else{
+									alert(res.data.msg);
+									window.location.href = "login.html"
+								}	
+						    })
+						}
+					},
+					onCreated(){
+						var url = baseUrl + "/blacklist/select";
+						axios.get(url, {
+							params: {
+								sellerId:getCookieValue("userid"),
+								sellerType:getCookieValue("role")
+								
+							},
+							headers: {
+								token: getCookieValue("token")
+							}
+						}).then((res) => {	
+							console.log(res.data)
+							if(res.data.code==10000){
+								this.balckList = res.data.data
+								console.log(res.data)
+							}else {
+								//跳转登录
+								//window.location.href = "login.html"
+							}
+						})
+					}
+				},
+				created(){
+					this.onCreated();
+				}
+			})
+		</script>
+	</body>
+</html>

@@ -1,0 +1,13 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	width: 100%;
+}
+
+.footer {
+	height: 50px;
+	background-color: #81D3F8;
+}

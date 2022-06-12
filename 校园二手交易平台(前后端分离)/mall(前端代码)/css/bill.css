@@ -1,0 +1,15 @@
+			.bill{
+				width: 80%;
+				margin: 0 auto;
+			}
+			.bill table{
+				width: 100%;
+				border: 1px solid #808080;
+				border-collapse: collapse;
+			}
+			.bill table td{
+				text-align: center;
+				/* width: 9%; */
+				padding: 5px;
+				border: 1px solid #F2F2F2;
+			}

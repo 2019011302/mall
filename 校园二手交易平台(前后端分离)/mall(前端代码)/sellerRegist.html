@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/regist.css">
+	</head>
+	<body>
+		<div id = "box">
+			<div><h1 class="myh1" >校园二手交易平台</h1></div>
+			<div class = "regist" style="margin-top: 30px;">
+				<h2 >商家注册</h2>
+				<p :style="{color :p_color}">{{tip}}</p>
+				<div>
+					<span>店名</span>
+					<input type="text" class="in" v-model="user.userName"/>
+				</div>
+				<div>
+					<span>手机号</span>
+					<input type="text" class="in" v-model="user.userPhone"/>
+				</div>
+				<div>
+					<span>邮箱</span>
+					<input type="text" class="in" v-model="user.userEmail"/>
+				</div>
+				<div>
+					<span>城市</span>
+					<input type="text" class="in" v-model="user.userCity"/>
+				</div>
+				<div>
+					<span>银行卡号</span>
+					<input type="text" class="in" v-model="user.userCard"/>
+				</div>
+				<div>
+					<span>性别</span>
+					<label><input type="radio" name = "usersex" v-model="user.userSex" value="user"/>男</label>
+					<label><input type="radio" name = "usersex" v-model="user.userSex" value="seller"/>女</label>
+				</div>
+				<div>
+				    <span>密码</span>
+					<input type="password"  class="in" v-model="user.userPassword"/>
+				</div>
+				<div>
+				    <span>确认密码</span>
+					<input type="password"  class="in" v-model="userpassword2"/>
+				</div>
+				<div>
+				    <span>身份证正面照</span>
+					<input type="file" id="inputCard" @change="show('inputCard' ,'identityCard' )"/>
+					<div id="identityCard"></div>
+				</div>
+				<div>
+				    <span>营业执照</span>
+					<input type="file" id="inputPaper" @change="show('inputPaper' ,'sellerPapper' )"/>
+					<div id="sellerPapper"></div>
+				</div>
+				<div>
+					<span style="padding-right: 10px; position: relative; top:-15px; height: 40px;">验证码</span>
+					<input type="text"
+						style="width: 130px; position: relative; top:-15px; height: 40px; font-size: 15px;"
+						placeholder="验证码区分大小写" v-model="useryzm" />
+					<canvas id="canvas" width="120" height="40" @click="changeYzm()"></canvas>
+				</div>
+				<div>
+					<button @click="onSubmit()">提交</button>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/img.js"></script>
+		<script type="text/javascript" src="js/yzm.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080";
+			var vm = new Vue({
+				el:"#box",
+				data:{
+					tip:"",
+					userpassword2:"",
+					usersex:"",
+					p_color:"",
+					user:{
+						userName:"",
+						userPhone:"",
+						userEmail:"",
+						userCity:"",
+						userCard:"",
+						userPassword:"",
+						userSex:""
+					},
+					useryzm: "", //用户填写的验证码
+					yzm: "" //实际的验证码
+				},
+				methods:{
+					changeYzm() {
+						this.yzm = yzm('canvas', 120, 40);
+						console.log(this.yzm);
+					},
+					show(img, div) {
+						showImg(img, div)
+					},
+					checkRegist(){
+						//判断空
+						if(this.user.userName==""){
+							this.tip = "请输入用户名";
+							this.p_color="red"
+							return false ;
+						}else if(this.user.userPhone==""){
+							this.tip = "请输入手机号";
+							this.p_color="red"
+							return false ;
+						}else if(this.user.userEmail==""){
+							this.tip = "请输入邮箱";
+							this.p_color="red"
+							return false ;
+						}else if(this.user.userCity==""){
+							this.tip = "请输入城市";
+							this.p_color="red"
+							return false ;
+						}else if(this.user.userCard==""){
+							this.tip = "银行卡号";
+							this.p_color="red"
+							return false ;
+						}else if(this.user.userPassword==""){
+							this.tip = "请输入密码";
+							this.p_color="red"
+							return false ;
+						}else if(this.userpassword2==""){
+							this.tip = "请输入确认密码";
+							this.p_color="red"
+							return false ;
+						}else if(this.usertype==""){
+							this.tip = "请选择用户类型";
+							this.p_color="red"
+							return false ;
+						}else if (this.useryzm != this.yzm) {
+							this.tip = "验证码错误";
+							this.changeYzm();
+							return false;
+						}
+						//判断两次密码是否相等
+						
+						//判断手机号长度、是否全是数字
+						
+						//判断邮箱里是否有*@*.com
+						
+						//判断银行卡的长度、是否全为数字
+						
+						//判断密码长度8-20位
+					
+						return true;
+					},
+					addImg(file , name , path){
+						var url = baseUrl + "/img/upload";	
+						//传参
+						var form = new FormData();
+						form.append('file' , file);
+						form.append('name' , name);
+						form.append('path' , path);
+						axios({
+							method:"post",
+							url:url,
+							header:{
+									'Content-Type':'multipart/form-data'
+								},
+							data:form
+						})
+						.then((res)=>{
+							console.log(res.data)
+							if(res.data.code == 10000){
+								// this.tip="提交成功，等待审核";
+								// this.p_color="green"
+							}else{
+								this.tip = res.data.msg;
+								this.p_color="red"
+							}
+						})
+					},
+					onSubmit(){
+						if(this.checkRegist()){
+							var url = baseUrl + "/img/uoload";
+							var file1 = document.getElementById('inputCard');
+							var file11 = file1.files[0];
+							console.log("img1",file11);
+							var file2 = document.getElementById('inputPaper');
+							var file22 = file2.files[0];
+							console.log("img2",file22);
+							var url = baseUrl + "/seller/regist";	
+							axios({
+								method:"post",
+								url:url,
+								data:this.user
+							})
+							.then((res)=>{
+								console.log(res.data)
+								if(res.data.code == 10000){
+									this.addImg();
+									//添加身份证
+									this.addImg(file11 , this.user.userName , "D:/Documents/HBuilderProjects/mall/img/card/")
+									//添加营业执照
+									this.addImg(file22 , this.user.userName , "D:/Documents/HBuilderProjects/mall/img/paper/")
+									alert("提交成功，等待审核");
+									//this.p_color="green"
+								}else{
+									this.tip = res.data.msg;
+									this.p_color="red"
+								}
+							})
+							
+						}
+					}
+				},
+				mounted() {
+					this.yzm = yzm('canvas', 120, 40);
+				}
+			})
+		</script>
+	</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/seller.css" />
+	</head>
+	<body>
+		<div id="box">
+			<div class="header">
+				<img src="img/common/shop.png">
+				<p>{{user.userName}}</p>
+				<a class="index" href="login.html">退出登录&nbsp;</a>
+				<a class="index" href="index.html">商城首页&nbsp;</a>
+			</div>
+			<div class = "bar">
+				<ul>
+					<li v-for="(item , index) in tarlist" :key="index" :class="index==mark?'active':''" @click="mark=index">
+						<a :href="item.href">{{item.name}}</a>
+					</li>
+				</ul>	
+			</div>
+			<div class="container">	
+				<table>
+					<tr>
+						<td style="width: 20%;">等级</td>
+						<td style="width: 80%;">{{user.sellerScale}}级</td>
+					</tr>
+					<tr>
+						<td>销售总额</td>
+						<td>{{user.userSale}}元</td>
+					</tr>
+<!-- 					<tr>
+						<td>账户余额</td>
+						<td>{{user.userAccount}}元</td>
+					</tr> -->
+					<tr>
+						<td>身份证</td>
+						<td><img :src="user.sellerIdentityCard | getSellerCard"/></td>
+					</tr>
+					<tr>
+						<td>营业执照</td>
+						<td><img :src="user.sellerPaper | getSellerPaper"/></td>
+					</tr>
+					<tr>
+						<td><a href="sellerComment.html">查看历史评价</a></td>
+					</tr>
+					<tr>
+						<td><a href="blackList.html">查看黑名单</a></td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080"
+			var vm = new Vue({
+					el:"#box",
+					data:{
+						tarlist:[],
+						datalist:[],
+						mark:3,
+						user:{},
+						
+					},
+					methods:{
+						getTarlist(){
+							axios.get("./json/data.json")
+								.then(res=>{
+									this.tarlist=res.data.data.seller
+								}).catch(err =>{
+									console.log(err)
+								})
+						},
+						onCreated(){
+							var token = getCookieValue("token");
+							console.log(token)
+							var url='';
+							//判断是个人用户还是商家
+							var role = getCookieValue("role")
+							if(role =='user' ){
+								url =  baseUrl+"/user/center";
+							}else if(role =='seller'){
+								url = baseUrl+"/seller/info";
+							}
+							//获取数据
+							axios.get(url, {
+								headers: {
+									token: token
+								},
+								params:{
+									id:getCookieValue("userid")
+								}
+							}).then((res) => {
+								if (res.data.code == 10000) {
+									console.log(res.data)
+									this.user = res.data.data
+								} else {
+									alert(res.data.msg)
+									window.location.href = "login.html"
+								}
+							
+							})
+						}
+					},
+					filters:{
+						getSellerPaper(img){
+						console.log("img/paper/" + img + ".jpeg");
+						return "img/paper/" + img + ".jpeg";
+						},
+						getSellerCard(img){
+						console.log("img/card/" + img + ".jpeg");
+						return "img/card/" + img + ".jpeg";
+						}
+					},
+					created(){
+						this.getTarlist();
+						this.onCreated();
+					}
+				})
+		</script>
+			
+
+	</body>
+</html>

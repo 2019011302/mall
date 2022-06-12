@@ -1,0 +1,37 @@
+body {
+	width: 100%;
+	/* background-color:#F0F8FF ; */
+}
+
+.findlist {
+	width: 80%;
+	height: 800px;
+	text-align: center;
+	background-color: #FFFFFF;
+	/* border: 1px solid #000000; */
+	margin: 0 auto;
+}
+
+.sortbar {
+	background-color: #F0F8FF;
+	width: 100%;
+	height: 30px;
+}
+
+.sortbar>ul {
+	list-style: none;
+}
+
+.sortbar>ul li {
+	float: left;
+	height: 30px;
+	line-height: 30px;
+	width: 33%;
+	text-align: center;
+}
+
+.sortbar>ul li img {
+	width: 15px;
+	height: 15px;
+	margin-left: 5px;
+}

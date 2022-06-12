@@ -1,0 +1,31 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+.orderItem {
+	width: 95%;
+	margin: 0 auto;
+}
+
+.orderItem table {
+	width: 100%;
+	border: 1px solid #808080;
+	border-collapse: collapse;
+}
+
+.orderItem table td {
+	text-align: center;
+	width: 9%;
+	padding: 5px;
+	border: 1px solid #F2F2F2;
+}
+
+.orderItem img {
+	width: 120px;
+}
+
+.trbg {
+	color: #71617D;
+	background-color: #F5F5F5;
+}

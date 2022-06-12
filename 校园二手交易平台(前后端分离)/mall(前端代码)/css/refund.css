@@ -1,0 +1,51 @@
+		*{
+			padding: 0;
+			margin: 0;
+		}
+		body{
+			width: 100%;
+		}
+		.refund{
+			width: 80%;
+			margin: 0 auto;
+		}
+		.refundbar{
+			width: 300px;
+			background-color: #F59A23;
+			height: 40px;
+			line-height: 40px;
+			color: #FFFFFF;
+			font-size: 20px;
+			text-align: center;
+		}
+		.refund .tag{
+			/* color: #FFFFFF; */
+			width: 200px;
+			text-align: center;
+			background-color: #F59A23;
+			margin: 10px;
+		}
+		.refund table{
+			width: 100%;
+			border: 1px solid #808080;
+			border-collapse: collapse;
+		}
+		.refund table td{
+			text-align: center;
+			width: 9%;
+			padding: 5px;
+			border: 1px solid #F2F2F2;
+		}
+		.refund img{
+			width: 120px;
+		}
+		.refund input{
+			width: 100%;
+			height: 150px;
+		}
+		.refund button{
+			width: 100%;
+			height: 40px;
+			margin-top: 10px;
+			font-size: 20px;
+		}

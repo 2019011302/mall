@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/seller.css" />
+		<link rel="stylesheet" type="text/css" href="css/goods.css" />
+	</head>
+	<body>
+		<div id="box">
+			<div class="header">
+				<img :src="name | getImg">
+				<p>{{name}}</p>
+				<a class="index" href="login.html">退出登录&nbsp;</a>
+				<a class="index" href="index.html">商城首页&nbsp;</a>
+			</div>
+			<div class="bar">
+				<ul>
+					<li v-for="(item , index) in tarlist" :key="index" :class="index==mark?'active':''"
+						@click="mark=index">
+						<a :href="item.href">{{item.name}}</a>
+					</li>
+				</ul>
+			</div>
+			<div class="container">
+				<div v-for="(item ,index) in datalist" :key="index" class="goods">
+					<span style="color: red;font-size: 10px;float: right;margin-left: 10px;" @click="handleClick(item , -1)"
+						v-if="item.goodsStatus>0">下架</span>
+					<span style="color: red;font-size: 10px;float: right;margin-left: 10px;" 
+						v-if="item.goodsStatus==0">审核中</span>
+					<span style="color: red;font-size: 10px;float: right;margin-left: 10px;" @click="handleClick(item , 0)"
+						v-if="item.goodsStatus==-1">申请上架</span>
+					<img :src="item.goodsImg | getGoodsImg" @click="gotoGoodsDetails(item.goodsId)" />
+					<p class="price">￥{{item.goodsPrice}}</p>
+					<p> {{item.goodsName}}</p>
+					<p class="rate"> 好评率：{{item.goodsPraiserate*100}}%</p>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080"
+			var vm = new Vue({
+				el: "#box",
+				data: {
+					tarlist: [],
+					datalist: [],
+					mark: 0,
+					name: ""
+				},
+				methods: {
+					getTarlist() {
+						axios.get("./json/data.json")
+							.then(res => {
+								this.tarlist = res.data.data.seller
+							}).catch(err => {
+								console.log(err)
+							})
+					},
+					gotoGoodsDetails(id) {
+						window.location.href = "goodsDetails.html?goodsid=" + id
+					},
+					handleClick(item , status) {
+						var flag;
+						if(status==-1){
+							flag = confirm("确认下架吗？")
+						}
+						else if(status==0){
+							flag = confirm("确认申请上架吗？")
+						}
+						if (flag) {
+							item.goodsStatus = status
+							var url = "http://localhost:8080/goods/update"
+							axios({
+								method: 'put',
+								url: url,
+								headers: {
+									token: getCookieValue("token")
+								},
+								data: item
+							}).then((res) => {
+								console.log("res", res.data)
+								if (res.data.code == 10000) {
+									alert("操作成功")
+									this.onCreated();
+								} else {
+									alert(res.data.msg)
+								}
+							})
+						}
+
+					},
+					onCreated() {
+						var token = getCookieValue("token");
+						console.log(token)
+						this.name = getCookieValue("username");
+						console.log(getCookieValue("userid"))
+						console.log("sellerType:",getCookieValue("role"))
+						//获取商家的全部商品数据
+						url = baseUrl + "/seller/goodslist"
+						axios.get(url, {
+							headers: {
+								token: token
+							},
+							params: {
+								sellerId: getCookieValue("userid"),
+								sellerType:getCookieValue("role")
+							}
+						}).then((res) => {
+							if (res.data.code == 10000) {
+								console.log(res.data)
+								this.datalist = res.data.data
+							} else {
+								alert(res.data.msg)
+								window.location.href = "login.html"
+							}
+
+						})
+					}
+				},
+				filters: {
+					getGoodsImg(img) {
+						return "img/goods/" + img + ".jpg"
+					},
+					getImg(img){
+						this.role = getCookieValue("role");
+						return "img/" + this.role+"/"+img + ".jpg";
+					},
+				},
+				created() {
+					this.getTarlist();
+					this.onCreated();
+				}
+			})
+		</script>
+
+
+	</body>
+</html>

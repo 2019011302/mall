@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/login.css">
+	</head>
+	<body>
+		<div id="box">
+			<div>
+				<h1 class="myh1">校园二手交易平台</h1>
+			</div>
+			<div class="login">
+				<h2>登录</h2>
+				<p>{{tip}}</p>
+				<div>
+					<span>&nbsp用户名&nbsp &nbsp</span>
+					<input type="text" class="in" v-model="username" />
+				</div>
+				<div>
+					<span>&nbsp密&nbsp &nbsp码&nbsp &nbsp</span>
+					<input type="password" class="in" v-model="password" />
+				</div>
+				<div>
+					<span style="padding-right: 10px; position: relative; top:-15px; height: 40px;">验证码</span>
+					<input type="text"
+						style="width: 130px; position: relative; top:-15px; height: 40px; font-size: 15px;"
+						placeholder="验证码区分大小写" v-model="useryzm" />
+					<canvas id="canvas" width="120" height="40" @click="changeYzm()"></canvas>
+				</div>
+				<div>
+					<label><input type="radio" name="usertype" v-model="usertype" value="user" />普通用户</label>
+					<label><input type="radio" name="usertype" v-model="usertype" value="seller" />商家</label>
+					<label><input type="radio" name="usertype" v-model="usertype" value="admin" />管理员</label>
+				</div>
+				<div>
+					<a href="sellerRegist.html" >商家注册</a>
+					<a href="userRegist.html" style="margin-right: 20px;">个人注册</a>
+				</div>
+				<div>
+					<button @click="onSubmit()">登录</button>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/yzm.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080";
+			var vm = new Vue({
+				el: "#box",
+				data: {
+					username: "",
+					password: "",
+					usertype: "",
+					tip: "",
+					useryzm: "", //用户填写的验证码
+					yzm: "" //实际的验证码
+				},
+				methods: {
+					changeYzm() {
+						this.yzm = yzm('canvas', 120, 40);
+						console.log(this.yzm);
+					},
+					checkLogin() {
+						if (this.username == "") {
+							this.tip = "请输入用户名!"
+							return false;
+						} else if (this.password == "") {
+							this.tip = "请输入密码!"
+							return false;
+						} else if (this.useryzm == "") {
+							this.tip = "请输入验证码!"
+							return false;
+						} else if (this.usertype == "") {
+							this.tip = "请选择用户类型!"
+							return false;
+						} else if (this.useryzm != this.yzm) {
+							this.tip = "验证码错误";
+							this.changeYzm();
+							return false;
+						}
+						return true;
+					},
+					onSubmit() {
+						if (this.checkLogin()) { //向后端发送请求
+							var url = "";
+							var role = this.usertype;
+							var url2="";
+							if (this.usertype == "user") {
+								url = baseUrl + "/user/login"
+								url2 = "index.html"
+							} else if (this.usertype == "seller") {
+								url = baseUrl + "/seller/login"
+								url2 = "sellerGoodsShow.html"
+							} else {
+								url = baseUrl + "/admin/login"
+								url2 = "adminUser.html"
+							}
+							axios.get(url, {
+									params: {
+										name: this.username,
+										pwd: this.password
+									}
+								}).then((res) => {
+									console.log(res.data)
+									if (res.data.code == 10000) {
+										this.tip = "登录成功"
+										setCookieValue("token", res.data.msg);
+										setCookieValue("role" , role)
+										if(this.usertype == "admin"){
+											//setCookieValue("userid", res.data.data.adminId);
+											setCookieValue("username", "管理员");
+											window.location.href = url2;
+										}
+										if (this.usertype == "user") {
+											setCookieValue("userid", res.data.data.userId);
+										}else if (this.usertype == "seller") {
+											setCookieValue("userid", res.data.data.sellerId);
+										}
+										setCookieValue("username", res.data.data.userName);
+
+										window.location.href = url2;
+									} else {
+										this.tip = res.data.msg;
+										this.changeYzm();
+									}
+								})
+							}
+						}
+					},
+				mounted() {
+					this.yzm = yzm('canvas', 120, 40);
+				}
+			})
+		</script>
+	</body>
+</html>

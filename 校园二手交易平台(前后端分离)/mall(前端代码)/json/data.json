@@ -1,0 +1,34 @@
+
+{
+	"data":{
+		"admin":[{"name":"用户管理","href":"adminUser.html"},
+					{"name":"商家管理","href":"adminSeller.html"},
+					{"name":"商品管理","href":"adminGoods.html"},
+					{"name":"费用管理","href":"adminMoney.html"},
+					{"name":"轮播图管理","href":"adminCarousel.html"}
+				],
+		"seller":[{"name":"商品橱窗","href":"sellerGoodsShow.html"},
+					{"name":"发布商品","href":"sellerGoodsRelease.html"},
+					{"name":"订单信息","href":"sellerOrder.html"},
+					{"name":"店铺信息","href":"sellerInfo.html"}
+				],
+		"index":[
+				{"name":"个人中心","href":"personCenter.html"},
+				{"name":"查看店铺","href":"sellerGoodsShow.html"},
+				{"name":"我的订单","href":"orderList.html"},
+				{"name":"购物车","href":"shoppingcar.html"},
+				{"name":"商城首页","href":"index.html"}
+				],
+		"index2":[
+					{"name":"商家中心","href":"personCenter.html"},
+					{"name":"查看店铺","href":"sellerGoodsShow.html"},
+					{"name":"商城首页","href":"index.html"}
+				],
+		"index3":[
+					{"name":"后台管理","href":"adminUser.html"},
+					{"name":"商城首页","href":"index.html"}
+					
+				]
+				
+	}	
+}

@@ -1,0 +1,44 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	width: 100%;
+}
+
+/* 搜索框样式 */
+.nav {
+	height: 85px;
+	background-color: #FFFFFF;
+	text-align: center;
+	position: sticky;
+	top: 0px
+}
+
+.nav input {
+	height: 35px;
+	line-height: 35px;
+	border: 2px solid #FF0000;
+	/* outline: #FF0000; */
+	width: 400px;
+	margin-top: 20px;
+	outline: none;
+	font-size: 16px;
+}
+
+.nav button {
+	border-radius: 0px;
+	height: 40px;
+	line-height: 35px;
+	width: 60px;
+	border: 1px solid #FF0000;
+	background-color: #FF0000;
+	font-size: 18px;
+	color: #FFFFFF;
+	position: relative;
+	margin-left: -5px;
+	top: 1px
+}
+
+/* 搜索框样式完毕 */

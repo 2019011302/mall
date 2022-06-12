@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/seller.css" />
+		<link rel="stylesheet" type="text/css" href="css/orderList.css" />
+	</head>
+	<body>
+		<div id="box">
+			<div>
+				<p style="font-size: 30px; text-align: center;">退款处理</p>
+			</div>
+			<div class="orderItem" style="margin-top: 15px;">
+				<table >		
+					<tr>
+						<td colspan="3" class="trbg">订单详情</td>
+						<!-- <td>图片</td>
+						<td>商品名称</td>
+						<td>商品数量</td> -->
+						<td class="trbg">商品金额</td>
+						<td class="trbg">实际付款</td>
+						<td class="trbg">配送地址</td>
+						<td class="trbg">配送方式</td>
+						<td class="trbg">收货人</td>
+						<td class="trbg">联系方式</td>
+						<td class="trbg">发货时间</td>
+						<td class="trbg">收货时间</td>
+					</tr>
+					<tr>
+						<td>
+							<img :src="item.goodsImg |getGoodsImg" @click="gotoGoodsDetails(item.goodsId)"/>
+						</td>
+						<td style="color:#504064;">{{item.goodsName}}</td>
+						<td style="color:#AAAAB2;">*{{item.goodsNumber}}</td>
+						<td style="color:#AAAAB2;">￥{{item.orderItemSum}}</td>
+						<td style="color:#504064;">￥{{item.orderItemMoney}}</td>
+						<td style="color:#504064;">{{item.orderItemAddress}}</td>
+						<td style="color:#504064;">{{item.orderItemWay}}</td>
+						<td style="color:#504064;">{{item.orderItemName}}</td>
+						<td style="color:#504064;">{{item.orderItemPhone}}</td>
+						<td style="color:#504064;">{{handleDate(item.orderItemStime)}}</td>
+						<td style="color:#504064;">{{item.orderItemEtime}}</td>
+					</tr>
+					<tr>
+						<td style="color:#504064;">退货状态</td>
+						<td colspan="4" style="color: red;">
+							{{refund.refundResult}}
+						</td>
+						<td style="color:#504064;">退款时间</td>
+						<td colspan="5" style="color: red;">
+							{{handleDate(refund.refundTime)}}
+							
+						</td>
+					</tr>
+					<tr>
+						<td style="color:#504064;">退货原因</td>
+						<td colspan="10" style="text-align: left;">
+							{{refund.refundReason}}
+						</td>
+					</tr>
+					<tr>
+					<tr>
+						<td style="color:#504064;">卖家备注</td>
+						<td colspan="10"  v-if="flag">
+							<input  class="sellerinput" v-model="reason"/>
+						</td>
+						<td colspan="10"  v-else>
+							{{refund.refundOther}}
+						</td>
+					</tr>
+					<tr v-if="flag">
+						<td style="color:#504064;">操作</td>
+						<td colspan="5">
+							<button class="success" @click="handleClick('通过','true')">通过</button>
+						</td>
+						<td colspan="5">
+							<button class="fail" @click="handleClick('驳回','false')">驳回</button>
+						</td>
+					</tr>
+				</table>
+				
+			</div>
+			<div>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080"
+			var orderItemId = getUrlParam("orderItemId");
+			var vm = new Vue({
+					el:"#box",
+					data:{
+						tarlist:[],
+						item:{},
+						refund:{},
+						mark:3,
+						name: "",
+						reason:"",
+						flag:true
+					},
+					methods:{
+						getTarlist(){
+							axios.get("./json/data.json")
+								.then(res=>{
+									this.tarlist=res.data.data.seller
+								}).catch(err =>{
+									console.log(err)
+								})
+						},
+						handleDate(date){
+							return showDate(date)
+						},
+						check(){
+							console.log("reason" , this.reason)
+							if(this.reason==""){
+								alert("请填写卖家备注")
+								return false
+							}
+							return true;
+						},
+						handleClick(status,bool){
+							if(this.check()){
+								var flag = confirm("确认"+status+"吗？")
+								if(flag){
+									//修改退后备注
+									var id = this.refund.refundId;
+									var other = this.reason;
+									axios({
+										method:'put',
+										url:baseUrl+"/refund/check",
+										headers:{
+											token:getCookieValue("token")
+										},
+										params:{
+											"refundId":id,
+											"other":other,
+											"bool":bool
+										}
+									}).then((res)=>{
+										console.log("res",res.data)
+										if(res.data.code==10000){
+											alert("提交成功")
+											window.location.href="sellerOrder.html"
+										}else{
+											alert("提交失败")
+										}
+									})
+								}
+							}
+						},
+						doUpdate(item){
+							var url = "http://localhost:8080/order/update"
+							axios({
+								method:'put',
+								url:url,
+								headers:{
+									token:getCookieValue("token")
+								},
+								data:item
+							}).then((res)=>{
+								console.log("res",res.data)
+								if(res.data.code==10000){
+									this.onCreated();
+								}else{
+									alert(res.data.msg)
+								}
+							})
+						},
+						onCreated(){
+							this.name = getCookieValue("username")
+							console.log(getUrlParam("orderItemId"))
+							var url = baseUrl+"/order/find"
+							var url2 = baseUrl+"/refund/one"
+							//获得订单项信息
+							axios.get(url,{
+								params:{
+									orderItemId:orderItemId
+								},
+								headers:{
+									token: getCookieValue("token")
+								}
+							}).then((res)=>{
+								if(res.data.code==10000){
+									console.log(res.data)
+									this.item = res.data.data
+								}else {
+									//跳转登录
+									window.location.href = "login.html"
+								}
+							})
+							//获得退货信息
+							axios.get(url2,{
+								params:{
+									orderItemId:orderItemId
+								},
+								headers:{
+									token: getCookieValue("token")
+								}
+							}).then((res)=>{
+								if(res.data.code==10000){
+									console.log("refund",res.data)
+									this.refund = res.data.data
+									if(this.refund.refundOther != ""){
+										this.flag = false
+									}
+									this.reason = this.refund.refundOther
+									
+								}else {
+									//跳转登录
+									window.location.href = "login.html"
+								}
+							})
+						}
+					},
+					filters:{
+						getGoodsImg(img) {
+							return "img/goods/" + img + ".jpg"
+						}
+					},
+					created(){
+						this.getTarlist();
+						this.onCreated();
+					}
+				})
+		</script>
+			
+
+	</body>
+</html>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mall.dao.CommentDao">
+    <resultMap id="comment" type="Comment">
+        <id column="comment_id" property="commentId"></id>
+        <result column="comment_score1" property="commentScore1"></result>
+        <result column="comment_score2" property="commentScore2"></result>
+        <result column="comment_text1" property="commentText1"></result>
+        <result column="comment_text2" property="commentText2"></result>
+        <result column="comment_time1" property="commentTime1"></result>
+        <result column="comment_time2" property="commentTime2"></result>
+        <result column="comment_service" property="commentService"></result>
+        <result column="orderItem_id" property="orderItemId"></result>
+    </resultMap>
+    <select id="getCommentByGoodsId" resultMap="comment">
+        select comment_id,
+            comment_score1,
+            comment_score2,
+            comment_text1,
+            comment_text2,
+            comment_time1,
+            comment_time2,
+            comment_service,
+            comments.orderItem_id
+        from comments join orderitem
+        on comments.orderItem_id = orderitem.orderItem_id
+        where goods_id = #{goodsId}
+    </select>
+    <select id="selectUserComment" resultMap="comment">
+        select comment_id,
+               comment_score1,
+               comment_score2,
+               comment_text1,
+               comment_text2,
+               comment_time1,
+               comment_time2,
+               comment_service,
+               comments.orderItem_id
+        from comments
+                 join orderitem on comments.orderItem_id = orderitem.orderItem_id
+                 join orders on orders.order_id = orderitem.order_id
+        where user_id = #{id}
+    </select>
+    <select id="selectSellerComment" resultMap="comment">
+        select comment_id,
+               comment_score1,
+               comment_score2,
+               comment_text1,
+               comment_text2,
+               comment_time1,
+               comment_time2,
+               comment_service,
+               comments.orderItem_id
+        from comments
+                 join orderitem on comments.orderItem_id = orderitem.orderItem_id
+                 join goods on goods.goods_id = orderitem.goods_id
+        where seller_id = #{id}
+    </select>
+
+</mapper>

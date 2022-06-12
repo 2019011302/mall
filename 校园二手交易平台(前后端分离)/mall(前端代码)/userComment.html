@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/commentlist.css">
+	</head>
+	<body>
+		<div id = "box">
+			<div class="commentlist">	
+				<table>
+					<tr>
+						<td colspan="8" style="font-size: 30px;">评论</td>
+					</tr>
+					<tr>
+						<td rowspan="2">订单项id</td>
+						<td colspan="4" style="background-color: antiquewhite;">我的评论</td>
+						<td colspan="3" >卖家评论</td>
+					</tr>
+					<tr>
+						<td style="background-color: antiquewhite;">商品评分</td>
+						<td style="background-color: antiquewhite;">卖家服务态度评分</td>
+						<td style="background-color: antiquewhite;">评价内容</td>
+						<td style="background-color: antiquewhite;">评价时间</td>
+						<td>对我的评分</td>
+						<td>评价内容</td>
+						<td>评价时间</td>
+					</tr>
+					<tr v-for="(item , index) in commentList" :key="index">
+						<td>{{item.orderItemId}}</td>
+						<td style="background-color: antiquewhite;">{{item.commentScore1}}</td>
+						<td style="background-color: antiquewhite;">{{item.commentService}}</td>
+						<td style="background-color: antiquewhite;">{{item.commentText1}}</td>
+						<td style="background-color: antiquewhite;">{{handleDate(item.commentTime1)}}</td>
+						<td>{{item.commentScore2}}</td>
+						<td>{{item.commentText2}}</td>
+						<td>{{handleDate(item.commentTime2)}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript">
+			var baseUrl="http://localhost:8080";
+			var vm = new Vue({
+				el:"#box",
+				data:{
+					commentList:[]
+				},
+				methods:{
+					handleDate(date){
+						return showDate(date)
+					},
+				},
+				created(){
+					var url = baseUrl + "/comment/usercomment";
+					axios.get(url, {
+						params: {
+							userId:getCookieValue("userid")
+						},
+						headers: {
+							token: getCookieValue("token")
+						}
+					}).then((res) => {	
+						
+						console.log(res.data)
+						if(res.data.code==10000){
+							this.commentList = res.data.data
+							console.log(res.data)
+						}else {
+							//跳转登录
+							//window.location.href = "login.html"
+						}
+					})
+				}
+			})
+		</script>
+	</body>
+</html>

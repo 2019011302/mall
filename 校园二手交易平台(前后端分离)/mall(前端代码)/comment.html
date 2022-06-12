@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/comment.css"/>
+	</head>
+	<body>
+		<div id="box">
+			<div class="comment">
+				<div class="commentbar">
+					填写评价信息
+			    </div>
+			    <hr style="border: 2px solid #F59A23;">
+				<div>
+					<div class = "tag">订单信息</div>
+					<div>
+						<table >			
+							<tr>
+								<td colspan="3" class="trbg">商品详情</td>
+								<!-- <td>图片</td>
+								<td>商品名称</td>
+								<td>商品数量</td> -->
+								<td class="trbg">商品金额</td>
+								<td class="trbg">实际付款</td>
+								<td class="trbg">配送地址</td>
+								<td class="trbg">配送方式</td>
+								<td class="trbg">收货人</td>
+								<td class="trbg">联系方式</td>
+								<td class="trbg">订单状态</td>
+								
+							</tr>
+							<tr>
+								<td>
+									<img :src="orderItem.goodsImg |getGoodsImg"/>
+								</td>
+								<td style="color:#504064;">{{orderItem.goodsName}}</td>
+								<td style="color:#AAAAB2;">*{{orderItem.goodsNumber}}</td>
+								<td style="color:#AAAAB2;">￥{{orderItem.orderItemSum}}</td>
+								<td style="color:#504064;">￥{{orderItem.orderItemMoney}}</td>
+								<td style="color:#504064;">{{orderItem.orderItemAddress}}</td>
+								<td style="color:#504064;">{{orderItem.orderItemWay}}</td>
+								<td style="color:#504064;">{{orderItem.orderItemName}}</td>
+								<td style="color:#504064;">{{orderItem.orderItemPhone}}</td>
+								<td style="color:#504064;">{{orderItem.orderItemStatus}}</td>
+							</tr>
+						</table>	
+					</div>
+				</div>
+				<div>
+					<div>
+						<div class = "tag">卖家服务态度打分</div>
+						<input type="radio" name = "service" style="margin: 10px;" v-model="service" value="100"/> 100分
+						<input type="radio" name = "service" style="margin: 10px;" v-model="service" value="80"/> 80分
+						<input type="radio" name = "service" style="margin: 10px;" v-model="service" value="60"/> 60分
+						<input type="radio" name = "service" style="margin: 10px;" v-model="service" value="40"/> 40分
+						<input type="radio" name = "service"  style="margin: 10px;" v-model="service" value="20"/> 20分
+					</div>
+					<div>
+						<div class = "tag">商品打分</div>
+						<input type="radio" name = "goods" style="margin: 10px;" v-model="goods" value="100"/> 100分
+						<input type="radio" name = "goods" style="margin: 10px;" v-model="goods" value="80"/> 80分
+						<input type="radio" name = "goods" style="margin: 10px;" v-model="goods" value="60"/> 60分
+						<input type="radio" name = "goods" style="margin: 10px;" v-model="goods" value="40"/> 40分
+						<input type="radio" name = "goods" style="margin: 10px;" v-model="goods"value="20"/> 20分
+					</div>
+					<div>
+						<div class = "tag">文字描述</div>
+					</div>
+					<div>
+						<input v-model="text" class="myinput" />
+					</div>
+				</div>
+				<div>
+					<button @click="comment()">提交</button>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080";
+			var orderItemId = getUrlParam("orderItemId");
+			var vm = new Vue({
+				el: "#box",
+				data: {
+					orderItem: {},
+					text:"",
+					goods:0,
+					service:0
+				},
+				filters:{
+					getGoodsImg(img) {
+						return "img/goods/" + img + ".jpg"
+					}
+				},
+				methods:{
+					comment(){
+						if(this.text ==""){
+							alert("请输入文字描述信息")
+						}else if(this.goods == 0){
+							alert("请给商品打分")
+						}else if(this.service == 0){
+							alert("请给卖家服务态度打分")
+						}else{
+							var flag = confirm("确认提交吗？")
+							if(flag == true){
+								var score1=this.goods;
+								var service = this.service;
+								var text1 = this.text;
+								axios({
+									method:"post",
+									url:baseUrl+"/comment/adduser",
+									headers:{
+										token:getCookieValue("token")
+									},
+									params:{
+										score1:score1,
+										service:service,
+										text1:text1,
+										orderItemId:orderItemId
+									}
+								}).then((res)=>{
+									if(res.data.code == 10000){
+										alert("提交成功");
+									}else{
+										alert(res.data.msg);
+									}
+								})
+							}
+						}
+					}
+				},
+				created(){
+					var url = baseUrl+"/order/find"
+					axios.get(url,{
+						params:{
+							orderItemId:orderItemId
+						},
+						headers:{
+							token: getCookieValue("token")
+						}
+					}).then((res)=>{
+						console.log(res.data)
+						this.orderItem = res.data.data
+					})
+				}
+				})
+		</script>
+	</body>
+</html>

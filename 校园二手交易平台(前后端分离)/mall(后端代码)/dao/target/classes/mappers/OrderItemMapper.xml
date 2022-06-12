@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mall.dao.OrderItemDao">
+    <resultMap id="orderItem" type="OrderItem">
+        <id column="orderItem_id" property="orderItemId"></id>
+        <result column="goods_number" property="goodsNumber"></result>
+        <result column="orderItem_money" property="orderItemMoney"></result>
+        <result column="orderItem_sum" property="orderItemSum"></result>
+        <result column="orderItem_way" property="orderItemWay"></result>
+        <result column="orderItem_stime" property="orderItemStime"></result>
+        <result column="orderItem_etime" property="orderItemEtime"></result>
+        <result column="orderItem_status" property="orderItemStatus"></result>
+        <result column="orderItem_isComment" property="orderItemIsComment"></result>
+        <result column="goods_id" property="goodsId"></result>
+        <result column="order_id" property="orderId"></result>
+        <result column="goods_name" property="goodsName"></result>
+        <result column="goods_img" property="goodsImg"></result>
+        <result column="order_address" property="orderItemAddress"></result>
+        <result column="order_name" property="orderItemName"></result>
+        <result column="order_phone" property="orderItemPhone"></result>
+    </resultMap>
+    <insert id="addOrderItem" useGeneratedKeys="true">
+        insert into orderitem(goods_number , orderItem_money , orderItem_sum , orderItem_way ,
+        orderItem_stime , orderItem_etime , orderItem_status ,orderItem_isComment
+        ,goods_id , order_id )
+        values (#{goodsNumber} , #{orderItemMoney} ,#{orderItemSum} ,#{orderItemWay},#{orderItemStime}
+        ,#{orderItemEtime} ,#{orderItemStatus},#{orderItemIsComment} ,#{goodsId},
+                #{orderId})
+    </insert>
+    <select id="getOrderItemByUserId" resultMap="orderItem">
+        select
+            orderItem_id,
+            goods_number,
+            orderItem_money,
+            orderItem_sum,
+            orderItem_way,
+            orderItem_stime,
+            orderItem_etime,
+            orderItem_status,
+            orderItem_isComment,
+            oi.goods_id,
+            oi.order_id,
+            goods_name,
+            goods_img,
+            order_address,
+            order_name,
+            order_phone
+        from orderItem oi
+            join orders o on oi.order_id = o.order_id
+            join goods on goods.goods_id = oi.goods_id
+        where o.user_id =#{userId}
+    </select>
+    <select id="getOrderItemById" resultMap="orderItem">
+        select
+            orderItem_id,
+            goods_number,
+            orderItem_money,
+            orderItem_sum,
+            orderItem_way,
+            orderItem_stime,
+            orderItem_etime,
+            orderItem_status,
+            orderItem_isComment,
+            oi.goods_id,
+            oi.order_id,
+            goods_name,
+            goods_img,
+            order_address,
+            order_name,
+            order_phone
+        from orderItem oi
+                 join orders o on oi.order_id = o.order_id
+                 join goods on goods.goods_id = oi.goods_id
+        where oi.orderItem_id =#{orderItemId}
+    </select>
+    <update id="updateOrderItem">
+        update orderitem
+        set
+        orderItem_stime = #{orderItemStime}, orderItem_etime = #{orderItemEtime},
+        orderItem_status = #{orderItemStatus}, orderItem_isComment = #{orderItemIsComment}
+        where orderItem_id = #{orderItemId}
+    </update>
+
+    <select id="getOrderItemBySellerId" resultMap="orderItem">
+        select
+            orderItem_id,
+            goods_number,
+            orderItem_money,
+            orderItem_sum,
+            orderItem_way,
+            orderItem_stime,
+            orderItem_etime,
+            orderItem_status,
+            orderItem_isComment,
+            oi.goods_id,
+            oi.order_id,
+            goods_name,
+            goods_img,
+            order_address,
+            order_name,
+            order_phone
+        from orderItem oi
+                 join orders o on oi.order_id = o.order_id
+                 join goods on goods.goods_id = oi.goods_id
+        where goods.seller_id =#{sellerId}
+    </select>
+    <select id="getOutTimeOrderItem" resultMap="orderItem">
+        select
+            orderItem_id,
+            orderItem_money,
+            orderItem_sum,
+            orderItem_way,
+            orderItem_stime,
+            orderItem_etime,
+            orderItem_status,
+            orderItem_isComment
+        from orderitem
+        where orderItem_status='已收货' and
+            DATE_FORMAT(#{time},'%Y-%m-%d %H:%i:%s') >= DATE_FORMAT(orderItem_etime,'%Y-%m-%d %H:%i:%s')
+
+    </select>
+</mapper>

@@ -1,0 +1,102 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+hr {
+	background-color: orange;
+	border: 1px solid orange;
+}
+
+.goodsdetail {
+	width: 80%;
+	height: 300px;
+	/* border: 1px solid #808080; */
+	margin: 0 auto;
+}
+
+.goodsdetail table {
+	/* border: 1px solid #808080; */
+	width: 100%;
+	height: 100%;
+}
+
+.goodsdetail table td {
+	/* border: 1px solid #808080; */
+	text-align: center;
+}
+
+.goodsdetail img {
+	width: 250px;
+}
+
+/* 评价信息 */
+.commentsBar {
+	width: 100%;
+	height: 30px;
+	background-color: #00BFBF;
+	text-align: center;
+}
+
+.commentsBar p {
+	height: 30px;
+}
+
+/* 评价信息 */
+.comments {
+	width: 80%;
+	height: 150px;
+	border: 1px solid #808080;
+	margin: 0 auto;
+}
+
+.comments table {
+	/* border: 1px solid #808080; */
+	width: 100%;
+	height: 100%;
+}
+
+.comments table td {
+	/* border: 1px solid #808080; */
+	text-align: left;
+	font-size: 12px;
+}
+
+.comments img {
+	width: 50px;
+	height: 50px;
+	border: 1px solid #000000;
+	border-radius: 50%;
+}
+
+/* 底部 */
+.footer {
+	width: 100%;
+	height: 50px;
+	/* background-color: #81D3F8; */
+	position: fixed;
+	bottom: 0;
+}
+
+.footer ul {
+	list-style: none;
+}
+
+.footer ul li {
+	float: left;
+	height: 100%;
+	width: 33%;
+	text-align: center;
+	line-height: 50px;
+	color: #FFFFFF;
+}
+
+.footer button {
+	width: 30px;
+	height: 30px;
+}
+
+.footer input {
+	width: 40px;
+	height: 25px;
+}

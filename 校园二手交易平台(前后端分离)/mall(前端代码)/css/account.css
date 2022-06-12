@@ -1,0 +1,58 @@
+body{
+				width: 100%;
+			}
+			.order{
+				width: 80%;
+				margin: 0 auto;
+			}
+			.order img{
+				width: 120px;
+			}
+			.orderbar{
+				width: 300px;
+				background-color: #F59A23;
+				height: 40px;
+				line-height: 40px;
+				color: #FFFFFF;
+				font-size: 20px;
+				text-align: center;
+			}
+			.order .tag{
+				/* color: #FFFFFF; */
+				width: 200px;
+				text-align: center;
+				background-color: #F59A23;
+				margin: 10px;
+			}
+			.order span{
+				display: inline-block;
+				width: 30%;
+				text-align: center;
+			}
+			.order table{
+				width: 100%;
+				/* border: 1px solid #000000; */
+			}
+			.order table td{
+				/* border: 1px solid #000000; */
+				width: 15%;
+				text-align: center;
+			}
+			.sumbar{
+				background-color: #F0F8FF;
+				position: fixed;
+				bottom: 0px;
+				height: 50px;
+				width: 100%;
+			}
+			.sumbar ul{
+				list-style: none;
+				width: 100%;
+			}
+			.sumbar ul li{
+				float: left;
+				line-height: 50px;
+				height: 50px;
+				width: 20%;
+				text-align: center;
+			}

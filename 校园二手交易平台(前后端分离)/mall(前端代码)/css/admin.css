@@ -1,0 +1,158 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	width: 100%;
+	background-color: #F0F8FF;
+}
+
+.header {
+	width: 100%;
+	background-color: #99ccff;
+	margin: 0 auto;
+	height: 80px;
+	line-height: 70px;
+	position: sticky;
+	top: 0px;
+}
+
+.header img {
+	width: 80px;
+	height: 80px;
+	margin-left: 50px;
+	border-radius: 50%;
+}
+
+.header p {
+	display: inline-block;
+	font-size: 30px;
+	margin-top: 0px;
+	position: fixed;
+}
+.header .index{
+	float: right;
+	/* margin-top: 0px; */
+	text-decoration: none;
+	color: #000000;
+	/* position: fixed; */
+	/* margin-top: 0;
+	margin-right: 0; */
+}
+
+.bar {
+	width: 100%;
+	background-color: #ffffff;
+	margin: 0 auto;
+	height: 30px;
+	/* margin-top: 10px; */
+}
+
+.bar ul {
+	list-style: none;
+	/* display: flex;
+				justify-content: space-around; */
+}
+
+.bar ul li {
+	line-height: 30px;
+	width: 20%;
+	text-align: center;
+	float: left;
+	/* display: flex; */
+	/* background-color: #00BFBF; */
+}
+
+.bar ul li:hover {
+	color: #00BFBF;
+	/* 				border-bottom: 2px solid #00BFBF; */
+}
+.bar a{
+	text-decoration: none;
+	color: #000000;
+}
+
+.bar .active {
+	/* color: #ffffff; */
+	color: #00BFBF;
+	border-bottom: 2px solid #00BFBF;
+	/* background-color: #66ccff; */
+}
+
+.container {
+	width: 90%;
+	/* background-color: #F2F2F2; */
+	margin: 0 auto;
+	/* height: 50px; */
+}
+.container table{
+	margin-top: 10px;
+	width: 100%;
+	border: 1px solid #808080;
+	border-collapse: collapse;
+	
+}
+.container td{
+	text-align: center;
+	width: 10%;
+	height: 35px;
+	line-height: 35px;
+	border: 1px solid #808080;
+}
+.container button{
+	color: #ffffff;
+	border: none;
+	height: 30px;
+	width: 50px;
+	
+}
+.container .first{
+	background-color: #F2F2F2;
+	position: sticky;
+	top: 80px;
+}
+.container .second{
+	background-color: #F0F8FF;
+	position: sticky;top: 115px;
+}
+.container input{
+	height: 23px;
+}
+.container select{
+	height: 25px;
+	width: 180px;
+}
+.container img{
+	width: 150px;
+}
+
+.success{
+	background-color: #00BFBF;
+}
+
+.fail{
+	background-color: #FF0000;
+}
+.recommend{
+	background-color: #99CCFF;
+}
+.detail{
+	background-color: #79FF79;
+}
+.deposit{
+	background-color: #A6A6D2;
+}
+.container .scaleinput{
+	width: 30px;
+	text-align: center;
+}
+.container .scalebutton{
+	color: #000000;
+	background-color: #99CCFF;
+	width: 20px;
+}
+.container .indexCarousel{
+	width: 400px;
+}
+

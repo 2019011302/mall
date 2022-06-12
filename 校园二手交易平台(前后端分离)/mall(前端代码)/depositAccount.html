@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/deposit.css"/>
+	</head>
+	<body>
+		<div id = "box">
+			<div class="deposit">
+				<input placeholder="请输入充值金额" v-model="money"/>
+				<div>
+				<button @click="deposit()"> 确认</button>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript">
+			var baseUrl="http://localhost:8080";
+			var vm = new Vue({
+				el:"#box",
+				data:{
+					user:{},
+					money:0,
+					role :""
+				},
+				methods:{
+					deposit(){
+						var flag = confirm("确认充值吗？")
+						if(flag){
+							var account = (parseFloat(this.money) + parseFloat(this.user.userAccount)).toFixed(2);		
+							var bill={
+							    billTime : new Date(),
+							    billMoney :this.money ,
+							    billAccount : account ,
+								userId : this.user.userId,
+								userType :"user",
+							    billOther : "银行卡账号"+this.user.userCard
+							};
+							if(this.role=='admin'){
+								bill.billOther='管理员充值'
+							}
+							var url = baseUrl+"/bill/add";
+							axios({
+								method:"post",
+								url:url,
+								headers:{
+									token:getCookieValue("token")
+								},
+								data:bill
+							}).then((res)=>{
+								if(res.data.code == 10000){
+									alert("充值成功")
+								}else{
+									alert("充值失败")
+								}
+							})
+						}	
+					}
+				},
+				created(){
+					var url = baseUrl + "/user/info";
+					var userId ; 
+					this.role = getCookieValue("role");
+					if(this.role=='admin'){
+						userId = getUrlParam("userId")
+					}else{
+						userId=getCookieValue("userid");
+					}
+					axios.get(url, {
+						params: {
+							id:userId
+						},
+						headers: {
+							token: getCookieValue("token")
+						}
+					}).then((res) => {
+						console.log("user",this.user)
+						if(res.data.code==10000){
+							this.user = res.data.data
+							console.log("user",this.user)
+						}else {
+							//跳转登录
+							window.location.href = "login.html"
+						}
+					})
+				}
+			})
+		</script>
+	</body>
+</html>

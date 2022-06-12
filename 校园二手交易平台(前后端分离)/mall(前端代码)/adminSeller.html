@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/admin.css" />
+	</head>
+	<body>
+		<div id="box">
+			<div class="header">
+				<img src="./img/admin/admin.png">
+				<p>管理员</p>
+				<a class="index" href="login.html">退出登录&nbsp;</a>
+				<a class="index" href="index.html">商城首页&nbsp;</a>
+			</div>
+			<div class = "bar">
+				<ul>
+					<li v-for="(item , index) in tarlist" :key="index" :class="index==mark?'active':''" @click="mark=index">
+						<a :href="item.href">{{item.name}}</a>
+					</li>
+				</ul>	
+			</div>
+			<div class="container">	
+			<!-- 显示商家信息 -->
+			<table>
+				<tr class="first">
+					<td colspan="4" style=" border: none;">
+						搜索商家名称<input v-model="namekey" placeholder="输入关键字"/>
+					</td>
+					<td colspan="4" style="border: none;">
+						选择商家状态
+						<select v-model="statuskey">
+							<option  value="2">所有商家</option>
+							<option value="0">待审核商家</option>
+							<option  value="-1">暂停营业</option>
+							<option value="1">正常商家</option>
+						</select>
+					</td>
+				</tr>
+				<tr class="second">
+					<td>商家id</td>
+					<td>商家名称</td>
+					<td>营业执照</td>
+					<td>身份证</td>
+					<td>营业额</td>
+					<td>评分</td>
+					<td>等级</td>
+					<td>账户状态</td>
+					<td>操作</td>
+				</tr>
+				<tr v-for="(item , index) in getDatalist " :key="index">
+					<td>{{item.sellerId}}</td>
+					<td>{{item.userName}}</td>
+					<td><img :src="item.sellerPaper | getSellerPaper"/></td>
+					<td><img :src="item.sellerIdentityCard | getSellerCard"/></td>
+					<td>￥{{item.userSale}}</td>
+					<td>{{item.userScore}}</td>
+					<td>
+						<button @click="handleSub(item)" :disabled="item.sellerScale==1" class="scalebutton">-</button>
+						<span>{{item.sellerScale}}</span>
+						<button  @click="handleAdd(item)" :disabled="item.sellerScale==5" class="scalebutton">+</button>	
+					</td>
+					<!-- <td>{{item.userPhone}}</td> -->
+					<td v-if="item.userStatus==0" style="color: #00BFBF;">待审核</td>
+					<td v-else-if="item.userStatus==1">正常营业</td>
+					<td v-else-if="item.userStatus==-1" style="color: #808080">已关闭</td>
+					
+					<td v-if="item.userStatus==0">
+						<button class="success" @click="handlePassCheck(item)">通过</button>
+						<button class="fail" @click="handleCheck(item)">不通过</button>
+					</td>
+					<td v-else-if="item.userStatus==1">
+						<button class="success" @click="gotoDetail(item.sellerId)">详情</button>
+						<button class="fail" @click="handleAddBlack(item)">拉黑</button>
+					</td>
+					<td v-else-if="item.userStatus==-1">
+						<button class="success"  @click="gotoDetail(item.sellerId)">详情</button>
+						<button class="fail" @click="handleCancelBlack(item)">取消</button>
+					</td>
+				</tr>
+			</table>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080"
+			var vm = new Vue({
+					el:"#box",
+					data:{
+						tarlist:[],
+						datalist:[],
+						mark:1,
+						namekey:"",
+						statuskey:"2",
+						number:5
+					},
+					computed:{
+						getDatalist(){
+							console.log(this.statuskey)
+							var list=[];
+							if(this.statuskey==2){
+									list = this.datalist.filter(
+										item=>(item.userName.includes(this.namekey))
+								)	
+							}else{
+								list = this.datalist.filter(
+									item=>item.userStatus==this.statuskey && item.userName.includes(this.namekey)
+								)
+							}
+							return list
+						}
+					},
+					methods:{
+						getTarlist(){
+							axios.get("./json/data.json")
+								.then(res=>{
+									this.tarlist=res.data.data.admin
+								}).catch(err =>{
+									console.log(err)
+								})
+						},
+						gotoDetail(sellerId){
+							//setCookieValue("sellerid" ,sellerId);
+							window.location.href="personCenter.html?"+'type=seller&'+'id='+sellerId;
+							
+						},
+						addsellerBlack(sellerId){
+							var url = "http://localhost:8080/admin/sellerblack"
+							axios({
+								method:'put',
+								url:url,
+								headers:{
+									token:getCookieValue("token")
+								},
+								params:{
+									sellerId:sellerId
+								}
+							}).then((res)=>{
+								if(res.data.code==10000){
+									alert("操作成功，共下架"+res.data.data+"件商品")
+									this.onCreated();
+								}else{
+									alert(res.data.msg)
+								}
+							})
+						},
+						doUpdate(item){
+							var url = "http://localhost:8080/admin/checkseller"
+							axios({
+								method:'put',
+								url:url,
+								headers:{
+									token:getCookieValue("token")
+								},
+								data:item
+							}).then((res)=>{
+								if(res.data.code==10000){
+									this.onCreated();
+								}else{
+									alert(res.data.msg)
+								}
+							})
+						},
+						handlePassCheck(item){
+							var flag=confirm("确认通过吗？")
+							if(flag){
+								item.userStatus = 1;
+								this.doUpdate(item)
+							}
+						},
+						handleCheck(item){
+							var flag=confirm("确认驳回商家申请吗？\n若确认，该商家会从列表中删除")
+							if(flag){
+								item.userStatus = -2;
+								this.doUpdate(item)
+							}
+						},
+						handleAddBlack(item){
+							var flag=confirm("确认暂停商家的营业吗？该操作会下架商家的全部商品")
+							if(flag){
+								item.userStatus = -1;
+								this.addsellerBlack(item.sellerId)
+							}
+						},
+						handleCancelBlack(item){
+							var flag=confirm("确认恢复商家营业吗？")
+							if(flag){
+								item.userStatus = 1;
+								this.doUpdate(item)
+							}
+						},
+						handleSub(item){
+							item.sellerScale--;
+							var flag = confirm("确认修改等级为"+item.sellerScale+"吗？")
+							//修改等级
+							if(flag){
+								this.doUpdate(item)
+							}else{
+								item.sellerScale++;
+							}
+						},
+						handleAdd(item){
+							item.sellerScale++;
+							var flag = confirm("确认修改等级为"+item.sellerScale+"吗？")
+							//修改等级
+							if(flag){
+								this.doUpdate(item)
+							}else{
+								item.sellerScale--;
+							}
+						},
+						onCreated(){
+							var token = getCookieValue("token");
+							console.log(token)
+							//获取全部商家数据
+							url = baseUrl+"/seller/list"
+							axios.get(url, {
+								headers: {
+									token: token
+								}
+							}).then((res) => {
+								if (res.data.code == 10000) {
+									console.log(res.data)
+									this.datalist = res.data.data
+								} else {
+									alert(res.data.msg)
+									window.location.href = "login.html"
+								}
+							
+							})
+						}
+					},
+					filters:{
+						getSellerPaper(img){
+						console.log("img/paper/" + img + ".jpeg");
+						return "img/paper/" + img + ".jpeg";
+						},
+						getSellerCard(img){
+						console.log("img/card/" + img + ".jpeg");
+						return "img/card/" + img + ".jpeg";
+						}
+					},
+					created(){
+						this.getTarlist();
+						this.onCreated();
+					}
+				})
+		</script>
+			
+
+	</body>
+</html>

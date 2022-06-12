@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/nav.css" />
+		<link rel="stylesheet" type="text/css" href="css/account.css"/>
+	</head>
+	<body>
+		<div id="box">
+			<div class = "order">
+				<div class="orderbar">
+					请核对订单信息
+				</div>
+				<hr style="border: 2px solid #F59A23;">
+				<div>
+					<div class = "tag">收货人信息</div>
+					<div style="height: 50px;">
+						<span>{{user.userName}}</span>
+						<span>{{user.userAddress}}</span>
+						<span>{{user.userPhone}}</span>
+					</div>
+				</div>
+				<div>
+					<div class = "tag">配送清单</div>
+					<table>
+						<tr >
+							<td>
+								<img :src="goods.goodsImg | getGoodsImg ">
+							</td>
+							<td>{{goods.goodsName}}</td>
+							<td>￥{{goods.goodsPrice}}/件</td>
+							<td>*{{goodsNumber}}</td>
+							<td>小计：￥{{(goodsNumber * goods.goodsPrice).toFixed(1)}}</td>
+							<td>{{goods.goodsWay}}</td>
+						</tr>
+					</table>
+				</div>
+			</div>	
+			<div style="height: 50px;"></div>
+			<div class="sumbar">
+				<ul>
+					<li>共{{goodsNumber}}件商品</li>
+					<li>合计：￥{{sum()}}</li>
+					<li>积分抵扣：{{getReward()}}元</li>
+					<li>应付：<span style="font-size: 18px ; color: #FF0000;">￥{{getRealSum()}}</span></li>
+					<li style="background-color: #D9001B; color: #FFFFFF;font-size: 20px;" @click="accounts()"><b>确认结算</b></li>
+				</ul>	
+			</div>
+		</div>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080"
+			var vm = new Vue({
+				el:"#box",
+				data:{
+					goods:{},
+					token:"",
+					user: {},
+					// username:getCookieValue("username"),
+					// userphone:getCookieValue("userphone"),
+					// useraddress:getCookieValue("useraddress"),
+					goodsNumber : getUrlParam("goodsNumber")
+					
+				},
+				filters:{
+					getGoodsImg(img) {
+						return "img/goods/" + img + ".jpg"
+					}
+				},
+				methods:{
+					sum(){
+						// console.log(this.goodslist[0].goodsPrice)
+						var total =this.goodsNumber * this.goods.goodsPrice;
+						return total.toFixed(2);
+					},
+					getReward(){
+						var reward = this.user.userRewardpoints;
+						var rewardInt = Math.floor(reward);
+						return rewardInt/100;
+					},
+					getRealSum(){
+						var total = this.sum() - this.getReward();
+						var realSum = total.toFixed(2);
+						return realSum;
+					},
+					getUserInfo(){
+						var url = baseUrl + "/user/info";
+						axios.get(url, {
+							params: {
+								id:getCookieValue("userid")
+							},
+							headers: {
+								token: getCookieValue("token")
+							}
+						}).then((res) => {
+							console.log(res.data)
+							if(res.data.code==10000){
+								this.user = res.data.data
+								console.log("user",this.user)
+							}else {
+								//跳转登录
+								window.location.href = "login.html"
+							}
+						})
+					},
+					accounts(){
+						//结算
+						//参数
+						//int userId , int goodsId , int goodsNumber , int sum , int realsum,int time
+						
+						var url = baseUrl+"/order/addOne";
+						axios({
+							method:"post",
+							url:url,
+							headers:{
+								token:this.token
+							},
+							params:{
+								userId: getCookieValue("userid"),
+								goodsId:getUrlParam("goodsId"),
+								goodsNumber:getUrlParam("goodsNumber"),
+								orderTime: new Date(),
+								sumMoney: this.sum(),
+								realMoney:this.getRealSum(),
+							}
+						}).then((res)=>{
+							console.log(res.data);
+							if(res.data.code==10000){
+								alert("下单成功")
+								var reward = res.data.data.userRewardpoints;
+								console.log(reward)
+								setCookieValue("reward" , reward)
+								window.location.href="orderList.html"
+							}else{
+								alert(res.data.msg)
+							}
+						})
+					}
+				},
+				created(){
+					this.token = getCookieValue("token");
+					var goodsId = getUrlParam("goodsId");
+					this.getUserInfo();
+					// var goodsNumber = getUrlParam("goodsNumber");
+					//获得购物车信息
+					var url1 = baseUrl+"/goods/goods";
+					axios({
+						method:"get",
+						url :url1,
+						headers:{
+							token: this.token
+						},
+						params:{
+							goodsId:goodsId
+						}
+					}).then((res)=>{
+						console.log("res.data.code",res.data.code)
+						if(res.data.code ==10000){
+							this.goods = res.data.data;
+							console.log(this.goods)
+						}else{
+							//跳转登录
+							window.location.href="login.html"
+						}
+					})
+				}
+			})
+		</script>
+	</body>
+</html>

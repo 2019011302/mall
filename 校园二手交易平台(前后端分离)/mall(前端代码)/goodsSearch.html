@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/header.css">
+		<link rel="stylesheet" type="text/css" href="css/nav.css">
+		<link rel="stylesheet" type="text/css" href="css/goods.css">
+		<link rel="stylesheet" type="text/css" href="css/findlist.css">
+	</head>
+	<body>
+		<div id="box">
+			<div class="header" id="header">
+				<p v-if="!username">您好，请<a href="login.html">登录</a>。免费<a href="regist.html">注册</a></p>
+				<p v-else>你好，{{username}}，欢迎登录 </p>
+				<ul class="header_ul">
+					<li v-for="(item , index) in indexlist" :key="index">
+						<a :href="item.href">{{item.name}}</a>
+					</li>
+				</ul>
+			</div>
+			<!-- 搜索框 -->
+			<div class="nav">
+				<input v-model="keyWord" />
+				<button @click="searchGoods(keyWord)">搜索</button>
+			</div>
+			<!-- 排序 -->
+			<div v-if="goodslist.length!=0">
+				<div class="sortbar">
+					<ul>
+						<li @click="doPriceSort()">价格排序<img src="img/common/sort.png" /></li>
+						<li @click="doSalesSort()">销量排序<img src="img/common/sort.png" /></li>
+						<li @click="doAppraiseSort()">好评度排序<img src="img/common/sort.png" /></li>
+					</ul>
+				</div>
+				<!-- 商品显示 -->
+				<div class="findlist">
+					<div v-for="(item ,index) in goodslist" :key="index">
+						<div class="goods" @click="gotoGoodsDetails(item.goodsId)">
+							<img :src="item.goodsImg | getGoodsImg" />
+							<p class="price">￥{{item.goodsPrice}}</p>
+							<p> {{item.goodsName}}</p>
+							<p class="rate"> 好评率：{{item.goodsPraiserate *100}}%</p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div v-else>
+				<p style="text-align: center;">暂无搜索结果</p>		
+			</div>
+		</div>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080";
+			var vm = new Vue({
+				el: "#box",
+				data: {
+					goodslist: [],
+					indexlist: [],
+					keyWord: "",
+					priceSort: true,
+					salesSort: true,
+					appraiseSort: true,
+					username: getCookieValue("username")
+				},
+				methods: {
+					getIndexlist() {
+						var role = getCookieValue("role")
+						axios.get("./json/data.json")
+							.then(res => {
+								//this.indexlist=res.data.data.index
+								if (role == 'user') {
+									this.indexlist = res.data.data.index
+								} else if (role == 'seller') {
+									this.indexlist = res.data.data.index2
+								} else {
+									this.indexlist = res.data.data.index3
+								}
+							}).catch(err => {
+								console.log(err)
+							})
+					},
+					searchGoods(key) {
+						if (key != "") {
+							var url = baseUrl + "/goods/findlist";
+							axios.get(url, {
+								params: {
+									keyWord: key
+								}
+							}).then((res) => {
+								this.goodslist = res.data.data
+								console.log(this.goodslist)
+							}).catch((err) => {
+								console.log(err)
+							})
+						}
+					},
+					doPriceSort() {
+						this.priceSort = !this.priceSort;
+						this.goodslist = this.priceSort ?
+							this.goodslist.sort((a, b) => a.goodsPrice - b.goodsPrice) :
+							this.goodslist.sort((a, b) => (b.goodsPrice - a.goodsPrice));
+					},
+					doSalesSort() {
+						this.salesSort = !this.salesSort;
+						this.goodslist = this.salesSort ?
+							this.goodslist.sort((a, b) => a.goodsSales - b.goodsSales) :
+							this.goodslist.sort((a, b) => b.goodsSales - a.goodsSales);
+					},
+					doAppraiseSort() {
+						this.appraiseSort = !this.appraiseSort;
+						this.goodslist = this.appraiseSort ?
+							this.goodslist.sort((a, b) => a.goodsPraiserate - b.goodsPraiserate) :
+							this.goodslist.sort((a, b) => b.goodsPraiserate - a.goodsPraiserate);
+					},
+					gotoGoodsDetails(id) {
+						window.location.href = "goodsDetails.html?goodsid=" + id
+					}
+				},
+				filters: {
+					getGoodsImg(img) {
+						return "img/goods/" + img + ".jpg"
+					}
+				},
+				created() {
+					this.getIndexlist()
+				}
+			})
+		</script>
+	</body>
+</html>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		 <link rel="stylesheet" type="text/css" href="css/header.css">
+		 <link rel="stylesheet" type="text/css" href="css/nav.css">
+		 <link rel="stylesheet" type="text/css" href="css/silde.css" />
+		 <link rel="stylesheet" type="text/css" href="css/main.css" />
+		 <link rel="stylesheet" type="text/css" href="css/goods.css" />
+		 <link rel="stylesheet" type="text/css" href="css/footer.css" />
+	</head>
+	<body>	
+		<div id="box">
+			<!-- 头部 -->
+			<div class="header" id="header">
+				<p v-if="!username">您好，请<a href="login.html">登录</a>。免费<a href="regist.html">注册</a></p>
+				<p v-else>你好，{{username}}，欢迎登录 </p>
+				<ul class="header_ul">
+					<li v-for="(item , index) in indexlist" :key="index">
+						<a :href="item.href">{{item.name}}</a>
+					</li>
+				</ul>
+			</div>
+
+			<!-- 搜索框 -->
+			<div class="nav" @click="search()">
+				<input />
+				<button>搜索</button>
+			</div>
+
+			<!-- 轮播图 -->
+			<div class="silde">
+				<!--图片显示-->
+				<div class="slideshow">
+					<ul>
+						<li v-for="(img , index) in indexImgs " v-show="index===mark" :key="index"
+							:style="{backgroundColor :bg_color}">
+							<img v-bind:src="img.carouselImg | getImgUrl">
+						</li>
+					</ul>
+				</div>
+				<!--控制器-->
+				<div class="bar">
+					<span v-for="(img , index) in indexImgs " :class="{'active' : index===mark}" :key="index"></span>
+				</div>
+			</div>
+
+			<!-- 主体 -->
+			<div class="main">
+				<div class="sidebar">
+					<ul v-for="(item,index) in taglist" :key="index">
+						<li :style="{backgroundColor: item.color}">
+							<a :href="item.href">{{item.tag}}</a>
+						</li>
+					</ul>
+				</div>
+				<div>
+					<div v-for="(item,i) in taglist" :key="i" class="container" :id="item.id">
+							<label class="tag" :style="{backgroundColor: item.color}">{{item.tag}}</label>
+							<div v-for="(item ,index) in doGoodsSort(i+1)" :key="index">
+								<div class="goods"  @click="gotoGoodsDetails(item.goodsId)">
+									<img :src="item.goodsImg | getGoodsImg" />
+									<p class="price">￥{{item.goodsPrice}}</p>
+									<p> {{item.goodsName}}</p>
+									<p class="rate"> 好评率：{{item.goodsPraiserate*100}}%</p>
+								</div>
+							</div>
+					</div>
+				</div>
+			</div>
+			<!-- 尾部 -->
+			<div class="footer"></div>
+		</div>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript">
+			var token = window.document.cookie;
+			var baseUrl = "http://localhost:8080";
+			var vm = new Vue({
+				el: "#box",
+				data: {
+					username:"",
+					mark: 0,
+					indexImgs: [],
+					bg_color: "",
+					goodslist: [],
+					img: "img/goods/01.jpg",
+					token:"",
+					indexlist:[],
+					taglist: [{
+							tag: "图书教材",
+							color: "#81D3F8",
+							href: "#a",
+							id: 'a'
+						},
+						{
+							tag: "闲置数码",
+							color: "#FFDF25",
+							href: "#b",
+							id: 'b'
+						},
+						{
+							tag: "寝室用具",
+							color: "#D0E17D",
+							href: "#c",
+							id: 'c'
+						},
+						{
+							tag: "电器日用",
+							color: "#EF5AA1",
+							href: "#d",
+							id: 'd'
+						}
+					]
+				},
+				methods: {
+					autoPlay() {
+						this.mark++;
+						if (this.mark == this.indexImgs.length) {
+							this.mark = 0;
+						}
+						this.bg_color = this.indexImgs[this.mark].carouselBgColor;
+						// console.log(this.bg_color)
+					},
+					play() {
+						setInterval(this.autoPlay, 3000);
+					},
+					doGoodsSort(index) {
+						var list = [];
+						for (var i = 0; i < this.goodslist.length; i++) {
+							if (this.goodslist[i].goodsType == index) {
+								list.push(this.goodslist[i])
+								console.log(this.goodslist[i])
+							}
+						}
+						return list;
+					},
+					gotoGoodsDetails(id){
+						window.location.href = "goodsDetails.html?goodsid="+id
+					},
+					search(){
+						window.open("goodsSearch.html")
+					},
+					getIndexlist(){
+						var role = getCookieValue("role")
+						axios.get("./json/data.json")
+							.then(res=>{
+								if(role=='user'){
+									this.indexlist=res.data.data.index
+								}
+								else if(role=='seller'){
+									this.indexlist=res.data.data.index2
+								}else{
+									this.indexlist=res.data.data.index3
+								}
+							}).catch(err =>{
+								console.log(err)
+							})
+					}
+				},
+				filters: {
+					getImgUrl(img) {
+						return "img/index/" + img;
+					},
+					getGoodsImg(img) {
+						return "img/goods/" + img + ".jpg"
+					}
+				},
+				created() {
+					this.getIndexlist()
+					this.username = getCookieValue("username");
+					//获得token
+					this.token = getCookieValue("token");
+					console.log("token" );
+					console.log(this.token);
+					
+					//获得轮播图
+					var url = baseUrl + "/carousel/index";
+					axios.get(url).then(res => {
+						var vo = res.data;
+						this.indexImgs = vo.data;
+						console.log(this.indexImgs)
+					}).catch(err => {
+						console.log(err)
+					})
+					//执行轮播
+					this.play();
+
+					//获得首页商品
+					axios.get(baseUrl + "/goods/indexlist").then((res) => {
+						this.goodslist = res.data.data;
+						console.log(this.goodslist)
+						console.log("doGoodsSort")
+						console.log(this.doGoodsSort(1))
+					}).catch((err) => {
+						console.log(err)
+					})
+				}
+			})
+		</script>
+	</body>
+</html>

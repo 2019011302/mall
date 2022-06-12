@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/admin.css" />
+	</head>
+	<body>
+		<div id="box">
+			<div class="header">
+				<img src="./img/admin/admin.png">
+				<p>管理员</p>
+				<a class="index" href="login.html">退出登录&nbsp;</a>
+				<a class="index" href="index.html">商城首页&nbsp;</a>
+			</div>
+			<div class="bar">
+				<ul>
+					<li v-for="(item , index) in barlist" :key="index" :class="index==mark?'active':''"
+						@click="mark=index">
+						<a :href="item.href">{{item.name}}</a>
+						<!-- <a href="adminMoney.html"></a> -->
+					</li>
+				</ul>
+			</div>
+			<div class="container">
+				<!-- 显示用户信息 -->
+				<table>
+					<tr class="first">
+						<td colspan="4" style=" border: none;">
+							搜索用户名<input v-model="namekey" placeholder="输入关键字"/>
+						</td>
+						<td colspan="4" style="border: none;">
+							选择用户状态<!-- <input /> -->
+							<select v-model="statuskey">
+								<option  value="2">所有用户</option>
+								<option value="0">待审核用户</option>
+								<option  value="-1">已拉黑用户</option>
+								<option value="1">正常用户</option>
+							</select>
+						</td>
+					</tr>
+					<tr class="second">
+						<td>用户id</td>
+						<td>用户名</td>
+						<td>城市</td>
+						<td>电话号码</td>
+						<td>性别</td>
+						<!-- <td>等级</td> -->
+						<td>账户状态</td>
+						<td colspan="2">操作</td>
+					</tr>
+					<tr v-for="(item , index) in getDatalist " :key="index">
+						<td>{{item.userId}}</td>
+						<td>{{item.userName}}</td>
+						<!-- <td>{{item.userCard}}</td> -->
+						<td>{{item.userCity}}</td>
+						<!-- <td>{{item.userEmail}}</td> -->
+						<td>{{item.userPhone}}</td>
+						<td>{{item.userSex}}</td>
+						<!-- <td>{{item.userSale}}</td>
+						<td>
+							<button @click="handleSub(item)" :disabled="item.sellerScale==5" class="scalebutton">-</button>
+							<span>{{item.userScale}}</span>
+							<button  @click="handleAdd(item)" :disabled="item.sellerScale==20" class="scalebutton">+</button>	
+						</td> -->
+						<td v-if="item.userStatus==0" style="color: #00BFBF;">{{item.userStatus | getStatus}}</td>
+						<td v-else-if="item.userStatus==1">{{item.userStatus | getStatus}}</td>
+						<td v-else-if="item.userStatus==-1" style="color: #808080">{{item.userStatus | getStatus}}</td>
+						
+						<td v-if="item.userStatus==0">
+							<button class="detail" @click="gotoDetail(item.userId)">详情</button>
+							<button class="success" @click="handlePassCheck(item)">通过</button>
+							<button class="fail" @click="handleCheck(item)">不通过</button>
+						</td>
+						<td v-else-if="item.userStatus==1">
+							<button class="detail" @click="gotoDetail(item.userId)">详情</button>
+							<button class="deposit" @click="gotoDeposit(item.userId)">充值</button>
+							<button class="fail" @click="handleAddBlack(item.userId)">拉黑</button>
+						</td>
+						<td v-else-if="item.userStatus==-1">
+							<button class="detail"  @click="gotoDetail(item.userId)">详情</button>
+							<button class="deposit"@click="gotoDeposit(item.userId)">充值</button>
+							<button class="fail" @click="handleCancelBlack(item)">取消</button>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080"
+			var vm = new Vue({
+				el: "#box",
+				data: {
+					barlist: [],
+					datalist:[],
+					mark: 0,
+					namekey:"",
+					statuskey:"2"
+				},
+				methods: {
+					getTarlist() {
+						axios.get("./json/data.json")
+							.then(res => {
+								this.barlist = res.data.data.admin
+							}).catch(err => {
+								console.log(err)
+							})
+					},
+					gotoDetail(userId){
+						//setCookieValue("userid" ,userId);
+						window.location.href="personCenter.html?"+'type=user&'+'id='+userId;
+						
+					},
+					gotoDeposit(userId){
+						window.location.href="depositAccount.html?userId="+userId;
+					},
+					adduserBlack(userId){
+						var url = "http://localhost:8080/admin/userblack"
+						axios({
+							method:'put',
+							url:url,
+							headers:{
+								token:getCookieValue("token")
+							},
+							params:{
+								userId:userId
+							}
+						}).then((res)=>{
+							if(res.data.code==10000){
+								alert("操作成功，共下架"+res.data.data+"件商品")
+								this.onCreated();
+							}else{
+								alert(res.data.msg)
+							}
+						})
+					},
+					doUpdate(item){
+						var url = "http://localhost:8080/admin/checkuser"
+						axios({
+							method:'put',
+							url:url,
+							headers:{
+								token:getCookieValue("token")
+							},
+							data:item
+						}).then((res)=>{
+							if(res.data.code==10000){
+								this.onCreated();
+							}else{
+								alert(res.data.msg)
+							}
+						})
+					},
+					handlePassCheck(item){
+						var flag=confirm("确认通过吗？")
+						if(flag){
+							item.userStatus = 1
+							this.doUpdate(item)
+						}
+					},
+					handleCheck(item){
+						var flag=confirm("确认驳回用户申请吗？\n若确认，该用户会从列表中删除")
+						if(flag){
+							item.userStatus =-2
+							this.doUpdate(item)
+						}
+					},
+					handleAddBlack(item){
+						var flag=confirm("确认加入黑名单吗？")
+						if(flag){
+							item.userStatus = -1
+							this.adduserBlack(item)
+						}
+					},
+					handleCancelBlack(item){
+						var flag=confirm("确认将用户从黑名单拉出吗？")
+						if(flag){
+							item.userStatus = 1
+							this.doUpdate(item)
+						}
+					},
+					handleSub(item){
+						item.userScale--;
+						var flag = confirm("确认修改等级为"+item.userScale+"吗？")
+						//修改等级
+						if(flag){
+							this.doUpdate(item)
+						}else{
+							item.userScale++;
+						}
+					},
+					handleAdd(item){
+						item.userScale++;
+						var flag = confirm("确认修改等级为"+item.userScale+"吗？")
+						//修改等级
+						if(flag){
+							this.doUpdate(item)
+						}else{
+							item.userScale--;
+						}
+					},
+					onCreated(){
+						var token = getCookieValue("token");
+						console.log(token)
+						//获取全部用户数据
+						url = baseUrl+"/user/list"
+						axios.get(url, {
+							headers: {
+								token: token
+							}
+						}).then((res) => {
+							if (res.data.code == 10000) {
+								console.log(res.data)
+								this.datalist = res.data.data
+							} else {
+								alert(res.data.msg)
+								window.location.href = "login.html"
+							}
+						
+						})
+					}
+				},
+				computed:{
+					getDatalist(){
+						console.log(this.statuskey)
+						var list=[];
+						if(this.statuskey==2){
+								list = this.datalist.filter(
+									item=>(item.userName.includes(this.namekey))
+							)	
+						}else{
+							list = this.datalist.filter(
+								item=>item.userStatus==this.statuskey && item.userName.includes(this.namekey)
+							)
+						}
+						return list
+					}
+				},
+				filters:{
+					getStatus(status){
+						if(status == 0)
+							return "待审核"
+						if(status == 1)
+							return "正常使用"
+						if(status == -1)
+							return "已拉黑"
+					}
+				},
+				created() {
+					this.getTarlist();
+					this.onCreated();
+				}
+			})
+		</script>
+
+
+	</body>
+</html>

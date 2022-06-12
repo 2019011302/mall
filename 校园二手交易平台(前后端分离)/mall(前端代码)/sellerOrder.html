@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/seller.css" />
+		<link rel="stylesheet" type="text/css" href="css/orderList.css" />
+	</head>
+	<body>
+		<div id="box">
+			<div class="header">
+				<img src="img/common/shop.png">
+				<p>{{name}}</p>
+				<a class="index" href="login.html">退出登录&nbsp;</a>
+				<a class="index" href="index.html">商城首页&nbsp;</a>
+			</div>
+			<div class = "bar">
+				<ul>
+					<li v-for="(item , index) in tarlist" :key="index" :class="index==mark?'active':''" @click="mark=index">
+						<a :href="item.href">{{item.name}}</a>
+					</li>
+				</ul>	
+			</div>
+			<div class="orderItem">
+				<table >	
+					<tr>
+<!-- 						<td colspan="4" style=" border: none;">
+							搜索商品名<input v-model="namekey" placeholder="输入关键字"/>
+						</td> -->
+						<td  colspan="12" style="text-align: right;" class="first">
+							选择订单状态
+							<select v-model="status">
+								<!-- 待发货，运输中，待收货，已收货，交易完成，退款中，交易关闭，已评价 -->
+								<option  value="all">全部订单</option>
+								<option value="待发货">待发货</option>
+								<option  value="运输中">运输中</option>
+								<option value="待收货">待收货</option>
+								<option value="已收货">已收货</option>
+								<option value="交易完成">交易完成</option>
+								<option value="退款中">退款中</option>
+								<option value="交易关闭">交易关闭</option>
+								<option value="已评价">已评价</option>
+							</select>
+						</td>
+					</tr>
+					<tr >
+						<td colspan="4" class="trbg">订单详情</td>
+						<!-- <td>图片</td>
+						<td>商品名称</td>
+						<td>商品数量</td> -->
+						<td class="trbg">商品金额</td>
+						<td class="trbg">实际付款</td>
+						<td class="trbg">配送地址</td>
+						<td class="trbg">配送方式</td>
+						<td class="trbg">收货人</td>
+						<td class="trbg">联系方式</td>
+						<td class="trbg">订单状态</td>
+						<td class="trbg" colspan="2">操作</td>
+					</tr>
+					<tr  v-for="(item , index) in getDatalist" :key="index">
+						<td style="width: 20px;">{{item.orderItemId}}</td>
+						<td>
+							<img :src="item.goodsImg |getGoodsImg" @click="gotoGoodsDetails(item.goodsId)"/>
+						</td>
+						<td style="color:#504064;">{{item.goodsName}}</td>
+						<td style="color:#AAAAB2;">*{{item.goodsNumber}}</td>
+						<td style="color:#AAAAB2;">￥{{item.orderItemSum}}</td>
+						<td style="color:#504064;">￥{{item.orderItemMoney}}</td>
+						<td style="color:#504064;">{{item.orderItemAddress}}</td>
+						<td style="color:#504064;">{{item.orderItemWay}}</td>
+						<td style="color:#504064;">{{item.orderItemName}}</td>
+						<td style="color:#504064;">{{item.orderItemPhone}}</td>
+						
+						<td style="color:#504064;">
+							<div v-if="item.orderItemIsComment == 1 || item.orderItemIsComment == 3 ">
+								已评价
+							</div>
+							<div v-else>
+								{{item.orderItemStatus}}
+							</div>
+						</td>
+						<td style="color:#AAAAB2;">
+							<!-- 订单的状态：待发货，运输中，待收货，已收货，交易完成，退款中，交易关闭，已评价,退款失败
+							商家可以进行的操作：发货和评价
+							点击发货->状态变成运输中，设置订单项的发货时间
+							点击送达->状态变成"待收货"
+							点击评价->对用户进行评价 -->
+							
+							<div v-if="item.orderItemStatus =='待发货'">
+								<button @click="handleClick(item , '运输中')">发货</button>
+							</div>
+							<div v-else-if="item.orderItemStatus =='运输中'">
+								<button @click="handleClick(item , '待收货')">已送达 </button>
+							</div>
+							<div v-else-if="item.orderItemStatus =='退款中'">
+								<button @click="gotoRefund(item.orderItemId)">处理退款</button>
+							</div>
+							<div v-else-if="item.orderItemStatus =='交易关闭'">
+								<button @click="gotoRefund(item.orderItemId)">查看退款详情</button>
+								<button @click="gotoComment(item.orderItemId)" v-if="show(item.orderItemIsComment)">评价</button>
+								<button @click="addBlack(item.orderItemId)">拉黑</button>
+							</div>
+							<div v-else-if="item.orderItemStatus =='退款成功'">
+								<button @click="gotoRefund(item.orderItemId)">查看退款详情</button>
+								<button @click="gotoComment(item.orderItemId)" v-if="show(item.orderItemIsComment)">评价</button>
+								<button @click="addBlack(item.orderItemId)">拉黑</button>
+							</div>
+							<div v-else>
+								<button @click="gotoComment(item.orderItemId)" v-if="show(item.orderItemIsComment)">评价</button>
+								<button @click="addBlack(item.orderItemId)">拉黑</button>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080"
+			var vm = new Vue({
+					el:"#box",
+					data:{
+						tarlist:[],
+						datalist:[],
+						mark:2,
+						name: "",
+						status:"all"
+					},
+					computed:{
+						getDatalist(){
+							console.log("status",this.status)
+							if(this.status== "all"){
+								return this.datalist;
+							}else{
+								console.log(this.status)
+								var list =  this.datalist.filter(
+									item=>(item.orderItemStatus.includes(this.status))
+								)
+								console.log("list",list)
+								return list;
+							}		
+						}
+						
+					},
+					methods:{
+						getTarlist(){
+							axios.get("./json/data.json")
+								.then(res=>{
+									this.tarlist=res.data.data.seller
+								}).catch(err =>{
+									console.log(err)
+								})
+						},
+						gotoRefund(orderItemId){
+							window.location.href ="sellerRefund.html?orderItemId="+orderItemId;
+						},
+						gotoComment(orderItemId){
+							window.location.href ="sellerEvaluate.html?orderItemId="+orderItemId;
+						},
+						show(isComment){
+							if(isComment == 2 || isComment==3){//商家已经评价，不显示评价按钮
+								return false
+							}else{
+								return true
+							}
+						},
+						doUpdate(item){
+							var url = "http://localhost:8080/order/update"
+							axios({
+								method:'put',
+								url:url,
+								headers:{
+									token:getCookieValue("token")
+								},
+								data:item
+							}).then((res)=>{
+								console.log("res",res.data)
+								if(res.data.code==10000){
+									this.onCreated();
+								}else{
+									alert(res.data.msg);
+									window.location.href = "login.html"
+								}
+							})
+						},
+						handleClick(item , status){
+							item.orderItemStatus = status
+							if(status =='运输中'){
+								item.orderItemStime=new Date();
+							}
+							this.doUpdate(item)
+						},
+						addBlack(orderItemId){
+							//console.log("111111111111111111111111")
+							var flag = confirm("确认拉黑买家吗?")
+							if(flag){
+								var url = "http://localhost:8080/blacklist/add"
+								axios({
+									method:'post',
+									url:url,
+									headers:{
+										token:getCookieValue("token")
+									},
+									params:{
+										orderItemId:orderItemId,
+										sellerId:getCookieValue('userid'),
+										sellerType:getCookieValue('role')
+									}
+								}).then((res)=>{
+									console.log("res",res.data)
+									if(res.data.code==10000){
+										alert('操作成功');
+										this.onCreated();
+									}else{
+										alert(res.data.msg);
+										window.location.href = "login.html"
+									}
+								})
+							}
+						},
+						onCreated(){
+							this.name = getCookieValue("username")
+							var token = getCookieValue("token");
+							console.log(token)
+							console.log(getCookieValue("userid"))
+							//获取全部商家订单
+							url = baseUrl+"/order/sellerlist"
+							axios.get(url, {
+								headers: {
+									token: token
+								},
+								params:{
+									sellerId:getCookieValue("userid")
+								}
+							}).then((res) => {
+								if (res.data.code == 10000) {
+									console.log(res.data)
+									this.datalist = res.data.data
+								} else {
+									alert(res.data.msg)
+									window.location.href = "login.html"
+								}
+							
+							})
+						}
+					},
+					filters:{
+						getGoodsImg(img) {
+							return "img/goods/" + img + ".jpg"
+						}
+					},
+					created(){
+						this.getTarlist();
+						this.onCreated();
+					}
+				})
+		</script>
+			
+
+	</body>
+</html>

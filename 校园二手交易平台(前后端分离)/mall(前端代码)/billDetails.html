@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/bill.css"/>
+	</head>
+	<body>
+		<div id = "box">
+			<div class="bill">
+				
+				<table>
+					<tr>
+						<td colspan="4" style="font-size: 30px;">账单</td>
+					</tr>
+					<tr>
+						<td>时间</td>
+						<td>金额</td>
+						<td>余额</td>
+						<td>备注(来源/去向)</td>
+					</tr>
+					<tr v-for="(item , index) in billList" :key="index">
+						<td>{{handleDate(item.billTime)}}</td>
+						<td>{{item.billMoney}}元</td>
+						<td>{{item.billAccount}}元</td>
+						<td>{{item.billOther}}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript">
+			var baseUrl="http://localhost:8080";
+			var vm = new Vue({
+				el:"#box",
+				data:{
+					billList:[]
+				},
+				methods:{
+					handleDate(date){
+						return showDate(date)
+					},
+				},
+				created(){
+					var url = baseUrl + "/bill/list";
+					axios.get(url, {
+						params: {
+							userId:getCookieValue("userid"),
+							userType:getCookieValue("role")
+							
+						},
+						headers: {
+							token: getCookieValue("token")
+						}
+					}).then((res) => {	
+						if(res.data.code==10000){
+							this.billList = res.data.data
+							console.log(this.billList)
+						}else {
+							//跳转登录
+							window.location.href = "login.html"
+						}
+					})
+				}
+			})
+		</script>
+	</body>
+</html>

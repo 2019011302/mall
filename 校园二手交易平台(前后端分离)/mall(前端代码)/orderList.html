@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+		<link rel="stylesheet" type="text/css" href="css/header.css">
+		<link rel="stylesheet" type="text/css" href="css/nav.css">
+		<link rel="stylesheet" type="text/css" href="css/orderList.css">
+	</head>
+	<body>
+		<div id="box">
+			<div class="header" id="header">
+				<p v-if="!username">您好，请<a href="login.html">登录</a>。免费<a href="regist.html">注册</a></p>
+				<p v-else>你好，{{username}}，欢迎登录 </p>
+				<ul class="header_ul">
+					<li v-for="(item , index) in indexlist" :key="index">
+						<a :href="item.href">{{item.name}}</a>
+					</li>
+				</ul>
+			</div>
+			<!-- 通过商品名称搜索购物车 -->
+			<div class="nav">
+				<input v-model="keyWord" placeholder="输入商品名搜索订单" />
+				<button>搜索</button>
+			</div>
+			<div class="orderItem">
+				<table>
+					<tr>
+						<td colspan="4" class="trbg">订单详情</td>
+						<!-- <td>图片</td>
+						<td>商品名称</td>
+						<td>商品数量</td> -->
+						<td class="trbg">商品金额</td>
+						<td class="trbg">实际付款</td>
+						<td class="trbg">配送地址</td>
+						<td class="trbg">配送方式</td>
+						<td class="trbg">收货人</td>
+						<td class="trbg">联系方式</td>
+						<td class="trbg">订单状态</td>
+						<td class="trbg">操作</td>
+					</tr>
+					<tr v-for="(item , index) in getTablelist()" :key="index">
+						<td style="width: 20px;">{{item.orderItemId}}</td>
+						<td>
+							<img :src="item.goodsImg |getGoodsImg" @click="gotoGoodsDetails(item.goodsId)" />
+						</td>
+						<td style="color:#504064;">{{item.goodsName}}</td>
+						<td style="color:#AAAAB2;">*{{item.goodsNumber}}</td>
+						<td style="color:#AAAAB2;">￥{{item.orderItemSum}}</td>
+						<td style="color:#504064;">￥{{item.orderItemMoney}}</td>
+						<td style="color:#504064;">{{item.orderItemAddress}}</td>
+						<td style="color:#504064;">{{item.orderItemWay}}</td>
+						<td style="color:#504064;">{{item.orderItemName}}</td>
+						<td style="color:#504064;">{{item.orderItemPhone}}</td>
+
+						<td style="color:#504064;">
+							<div v-if="item.orderItemIsComment == 1 || item.orderItemIsComment == 3 ">
+								已评价
+							</div>
+							<div v-else>
+								{{item.orderItemStatus}}
+							</div>
+						</td>
+						<td style="color:#AAAAB2;">
+							<!-- 待发货，运输中，待收货，已收货，交易完成，退款中，交易关闭，已评价 -->
+							<div
+								v-if="item.orderItemStatus =='待发货' || item.orderItemStatus =='运输中'">
+								<button @click="gotoRefund(item.orderItemId)">退款 </button>
+							</div>
+							<div
+								v-if="item.orderItemStatus =='待收货'">
+								<button @click="gotoRefund(item.orderItemId)">退款 </button>
+								<button @click="takeDelivery(item)">收货 </button>
+							</div>
+							
+							<div v-if="item.orderItemStatus =='已收货'">
+								<button @click="gotoRefund(item.orderItemId)">退款 </button>
+								<button @click="comfirmOrder(item.orderItemId)">确认收货 </button>
+							</div>
+							<div v-else-if="item.orderItemStatus =='交易完成'">
+								<button @click="gotoComment(item.orderItemId)" v-if="show(item.orderItemIsComment)">评价</button>
+							</div>
+							<div v-else-if="item.orderItemStatus =='交易关闭'"><!-- 退款成功 -->
+								<button @click="gotoRefundDetail(item.orderItemId)">查看退款详情</button>
+								<button @click="gotoComment(item.orderItemId)" v-if="show(item.orderItemIsComment)">评价</button>
+							</div>
+							<div v-else-if="item.orderItemStatus =='退款失败'"><!-- 退款失败 -->
+								<button @click="gotoRefundDetail(item.orderItemId)">查看退款详情</button>
+								<button @click="gotoComment(item.orderItemId)" v-if="show(item.orderItemIsComment)">评价</button>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</div>
+
+		</div>
+		<script type="text/javascript" src="js/vue.js"></script>
+		<script type="text/javascript" src="js/cookie_utils.js"></script>
+		<script type="text/javascript" src="js/axios.js"></script>
+		<script type="text/javascript" src="js/utils.js"></script>
+		<script type="text/javascript">
+			var baseUrl = "http://localhost:8080";
+			var vm = new Vue({
+				el: "#box",
+				data: {
+					keyWord: "",
+					orderList: [],
+					indexlist: [],
+					username: getCookieValue("username")
+				},
+				methods: {
+					getIndexlist() {
+						axios.get("./json/data.json")
+							.then(res => {
+								this.indexlist = res.data.data.index
+							}).catch(err => {
+								console.log(err)
+							})
+					},
+					show(isComment){
+						if(isComment == 1 || isComment==3){//用户已经评价，不显示评价按钮
+							return false
+						}else{
+							return true
+						}
+					},
+					gotoRefundDetail(orderItemId){
+						window.location.href ="sellerRefund.html?orderItemId="+orderItemId;
+					},
+					getTablelist() {
+						var list = this.orderList.filter(item => (
+							item.goodsName.includes(this.keyWord)
+						))
+						return list
+
+					},
+					gotoGoodsDetails(goodsid) {
+						window.location.href = "goodsDetails.html?goodsid=" + goodsid;
+					},
+					gotoRefund(orderItemId) {
+						window.location.href = "refund.html?orderItemId=" + orderItemId;
+					},
+					gotoComment(orderItemId) {
+						window.location.href = "comment.html?orderItemId=" + orderItemId;
+					},
+					takeDelivery(item) {
+						item.orderItemStatus = '已收货'
+						item.orderItemEtime = new Date();
+						var url = "http://localhost:8080/order/update"
+						axios({
+							method: 'put',
+							url: url,
+							headers: {
+								token: getCookieValue("token")
+							},
+							data: item
+						}).then((res) => {
+							console.log("res", res.data)
+							if (res.data.code == 10000) {
+								this.getOrderList();
+							} else {
+								alert(res.data.msg);
+								window.location.href = "login.html"
+							}
+						})
+					},
+					comfirmOrder(orderItemId) {
+						var flag = confirm("确认收货吗？");
+
+						if (flag == true) {
+							//确认收货
+							axios({
+								method: "post",
+								url: baseUrl + "/order/takeDelivery",
+								headers: {
+									token: getCookieValue("token")
+								},
+								params: {
+									orderItemId: orderItemId,
+									//userId: getCookieValue("userid")
+								}
+							}).then((res) => {
+								if (res.data.code == 10000) {
+									alert("确认收货成功");
+									var reward = res.data.data.userRewardpoints;
+									console.log(reward)
+									setCookieValue("reward", reward)
+									this.getOrderList()
+								} else {
+									alert("确认收货失败");
+								}
+							})
+
+						} else {
+							alert("已取消");
+						}
+					},
+					getOrderList() {
+						var url = baseUrl + "/order/userlist";
+						var token = getCookieValue("token");
+						console.log(token)
+						var userid = getCookieValue("userid");
+						console.log(userid)
+						axios({
+							method: "get",
+							url: url,
+							headers: {
+								token: token
+							},
+							params: {
+								userId: userid
+							}
+						}).then((res) => {
+							console.log(res.data.code)
+							if (res.data.code == 10000) {
+								this.orderList = res.data.data
+								console.log(res.data.data)
+							} else {
+								//跳转登录
+								window.location.href = "login.html"
+							}
+						})
+					}
+				},
+				filters: {
+					getGoodsImg(img) {
+						return "img/goods/" + img + ".jpg"
+					}
+				},
+				created() {
+					this.getIndexlist()
+					this.getOrderList()
+				}
+			})
+		</script>
+	</body>
+</html>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mall.dao.ShoppingCarDao">
+    <resultMap id="shoppingcar" type="ShoppingCar">
+        <id column="car_id" property="carId"></id>
+        <result column="car_number" property="carNumber"></result>
+        <result column="car_time" property="carTime"></result>
+        <result column="user_id" property="userId"></result>
+        <result column="goods_id" property="goodsId"></result>
+        <result column="goods_name" property="goodsName"></result>
+        <result column="goods_img" property="goodsImg"></result>
+        <result column="goods_price" property="goodsPrice"></result>
+        <result column="goods_stock" property="goodsStock"></result>
+        <result column="goods_way" property="goodsWay"></result>
+        <result column="goods_status" property="goodsStatus"></result>
+    </resultMap>
+    <select id="getShoppingCarByUserId" resultMap="shoppingcar">
+        select car_id,
+               car_number,
+               car_time,
+               user_id,
+               cars.goods_id,
+               goods_name,
+               goods_img,
+               goods_price,
+               goods_stock,
+               goods_status
+        from cars join goods on cars.goods_id = goods.goods_id
+        where user_id = #{userId}
+    </select>
+    <select id="getShoppingCarByCarId" resultMap="shoppingcar">
+        select car_id,
+               car_number,
+               car_time,
+               user_id,
+               cars.goods_id,
+               goods_name,
+               goods_img,
+               goods_price,
+               goods_stock,
+               goods_way
+        from cars join goods on cars.goods_id = goods.goods_id
+        where car_id = #{carId}
+    </select>
+
+    <insert id="addShoppingCar" useGeneratedKeys="true">
+        insert into cars(car_number , car_time, user_id, goods_id)
+        values (#{carNumber} , #{carTime} , #{userId} , #{goodsId})
+    </insert>
+    <delete id="deleteShoppingCar">
+        delete from cars where car_id = #{carId}
+    </delete>
+    <update id="updateShoppingCar">
+        update cars set car_number = #{carNumber}
+        where car_id = #{carId}
+    </update>
+</mapper>

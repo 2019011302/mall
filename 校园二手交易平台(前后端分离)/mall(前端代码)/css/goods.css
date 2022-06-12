@@ -1,0 +1,37 @@
+/* 商品样式 */
+.goods {
+	width: 150px;
+	height: 230px;
+	display: inline-block;
+	float: left;
+	margin-left: 30px;
+	margin-top: 30px;
+	/* background-color: #81D3F8 */
+}
+
+.goods img {
+	/* width: 150px; */
+	height: 150px;
+	/* position: fixed;
+	margin-top: 0; */
+}
+
+.goods p {
+	display: inline-block;
+	width: 150px;
+	margin-left: 0px;
+	height: 20px;
+	line-height: 20px;
+	text-align: center;
+}
+
+.price {
+	color: #FF0000;
+	font-size: 15px;
+	/* background-color: #FFFFFF; */
+}
+.rate{
+	color: #FF0000;
+	font-size: 15px;
+	/* background-color: #FFFFFF; */
+}
